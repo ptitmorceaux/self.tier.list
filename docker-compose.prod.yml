@@ -6,7 +6,7 @@ services:
 
   postgres:
     image: postgres:15
-    container_name: selftierlist_postgres
+    container_name: selftierlist-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -20,9 +20,11 @@ services:
       - cloudflared_proxy
   
   fastapi:
-    build: ./fastapi
+    build:
+      context: ./fastapi
+      dockerfile: Dockerfile
     image: selftierlist-fastapi:latest
-    container_name: selftierlist_fastapi
+    container_name: selftierlist-fastapi
     restart: unless-stopped
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_NAME}
@@ -38,7 +40,7 @@ services:
 
   # adminer:
   #   image: adminer
-  #   container_name: selftierlist_adminer
+  #   container_name: selftierlist-adminer
   #   restart: unless-stopped
   #   ports:
   #     - 8080:8080
@@ -46,4 +48,3 @@ services:
   #     - postgres
   #   networks:
   #     - default
-  #     - cloudflared_proxy
