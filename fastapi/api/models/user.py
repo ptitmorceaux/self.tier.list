@@ -8,8 +8,8 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     pseudo = Column(String(256), unique=True, nullable=False)
-    username = Column(String(256), unique=True, nullable=False)
-    password = Column(String(512), nullable=False)
+    username = Column(String(256), unique=True, nullable=False, minlength=3)
+    password = Column(String(512), nullable=False, minlength=3)
     is_admin = Column(Boolean, nullable=False, server_default="false")
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
