@@ -33,14 +33,16 @@ services:
       - default
   
   nginx:
-    image: nginx:alpine
-    container_name: selftierlist-frontend
-    volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/error:/var/www/error:ro
-      - ./frontend:/usr/share/nginx/html:ro
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: selftierlist-nginx:latest
+    container_name: selftierlist-nginx
+    depends_on:
+      - fastapi
     networks:
       - default
+      - cloudflared_proxy
 
   adminer:
     image: adminer
