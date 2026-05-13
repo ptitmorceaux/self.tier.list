@@ -1,83 +1,72 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Connexion - Self Tier List</title>
-	<link rel="stylesheet" href="/assets/css/style.css">
-	<script type="module" src="/assets/js/login.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion / Inscription</title>
+  <link rel="stylesheet" href="assets/css/style.css">
 </head>
-<body class="page-auth">
-	<div class="page-bg"></div>
-	<main class="shell shell-auth">
-		<header class="topbar compact">
-			<a class="brand" href="/">
-				<span class="brand-mark">ST</span>
-				<span>
-					<strong>Self Tier List</strong>
-					<small>Connexion et création de compte</small>
-				</span>
-			</a>
-			<a class="ghost-button" href="/">Retour</a>
-		</header>
+<body>
+  <nav class="navbar"></nav>
 
-		<section class="auth-layout">
-			<article class="card auth-panel">
-				<div class="tabs">
-					<button class="tab is-active" data-auth-tab="login" type="button">Connexion</button>
-					<button class="tab" data-auth-tab="register" type="button">Inscription</button>
-				</div>
+  <div class="page">
+    <div class="form-card">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="font-size: 48px; margin-bottom: 15px;">🎮</div>
+        <h2>Bienvenue</h2>
+        <p style="color: var(--text-light); margin-top: 10px;">Connectez-vous ou créez un compte</p>
+      </div>
 
-				<div class="notice" data-api-hint>Détection de l’API en cours...</div>
+      <!-- Onglets -->
+      <div style="display: flex; gap: 0; margin-bottom: 30px; border-bottom: 2px solid var(--light-gray);">
+        <button id="tab-login" class="tab-btn active" style="flex: 1;">
+          🔐 Connexion
+        </button>
+        <button id="tab-register" class="tab-btn" style="flex: 1;">
+          ✍️ Inscription
+        </button>
+      </div>
 
-				<form class="stack-form" data-auth-form="login">
-					<label>
-						<span>Nom d’utilisateur</span>
-						<input name="username" autocomplete="username" required>
-					</label>
-					<label>
-						<span>Mot de passe</span>
-						<input type="password" name="password" autocomplete="current-password" required>
-					</label>
-					<label>
-						<span>Durée du jeton en minutes</span>
-						<input type="number" name="jwt_expir" min="1" max="1440" value="1440" required>
-					</label>
-					<button class="button button-primary" type="submit">Se connecter</button>
-				</form>
+      <!-- Formulaire de connexion -->
+      <form id="login-form" class="form-section">
+        <div class="form-group">
+          <label for="login-username">👤 Nom d'utilisateur</label>
+          <input type="text" id="login-username" placeholder="Entrez votre identifiant" required>
+        </div>
 
-				<form class="stack-form hidden" data-auth-form="register">
-					<label>
-						<span>Pseudo</span>
-						<input name="pseudo" autocomplete="nickname" required>
-					</label>
-					<label>
-						<span>Nom d’utilisateur</span>
-						<input name="username" autocomplete="username" required>
-					</label>
-					<label>
-						<span>Mot de passe</span>
-						<input type="password" name="password" autocomplete="new-password" minlength="3" required>
-					</label>
-					<button class="button button-primary" type="submit">Créer mon compte</button>
-				</form>
+        <div class="form-group">
+          <label for="login-password">🔒 Mot de passe</label>
+          <input type="password" id="login-password" placeholder="Entrez votre mot de passe" required>
+        </div>
 
-				<div class="form-message" data-auth-message></div>
-			</article>
+        <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+      </form>
 
-			<aside class="card side-panel">
-				<p class="card-kicker">Fonctionnel</p>
-				<h1>Un seul front pour les deux parcours.</h1>
-				<p>
-					L’interface gère la création de compte, la connexion JWT et le stockage local de la session.
-					Une fois connecté, tu arrives directement sur le dashboard des tier lists.
-				</p>
-				<div class="inline-actions">
-					<a class="ghost-button" href="/tierlist.html">Voir le dashboard</a>
-					<a class="ghost-button" href="/profile.html">Mon profil</a>
-				</div>
-			</aside>
-		</section>
-	</main>
+      <!-- Formulaire d'inscription -->
+      <form id="register-form" class="form-section" style="display: none;">
+        <div class="form-group">
+          <label for="register-pseudo">⭐ Pseudo (surnom public)</label>
+          <input type="text" id="register-pseudo" placeholder="Votre surnom public" required>
+        </div>
+
+        <div class="form-group">
+          <label for="register-username">👤 Nom d'utilisateur</label>
+          <input type="text" id="register-username" placeholder="Votre identifiant (min. 3 caractères)" required>
+        </div>
+
+        <div class="form-group">
+          <label for="register-password">🔒 Mot de passe</label>
+          <input type="password" id="register-password" placeholder="Votre mot de passe (min. 3 caractères)" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">S'inscrire</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/pages/login.js"></script>
 </body>
 </html>
