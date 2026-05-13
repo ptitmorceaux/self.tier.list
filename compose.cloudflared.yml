@@ -49,14 +49,3 @@ services:
     networks:
       - default
       - cloudflared_proxy
-
-  # adminer:
-  #   image: adminer
-  #   container_name: selftierlist-adminer
-  #   restart: unless-stopped
-  #   ports:
-  #     - 8080:8080
-  #   depends_on:
-  #     - postgres
-  #   networks:
-  #     - default

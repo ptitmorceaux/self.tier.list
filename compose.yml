@@ -38,6 +38,8 @@ services:
       dockerfile: Dockerfile
     image: selftierlist-nginx:latest
     container_name: selftierlist-nginx
+    ports:
+      - 8888:80
     depends_on:
       - fastapi
     networks:
