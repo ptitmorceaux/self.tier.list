@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Self Tier List</title>
+	<meta name="description" content="Crée, modifie et partage tes tier lists self-hosted.">
+	<link rel="stylesheet" href="/assets/css/style.css">
+	<script type="module" src="/assets/js/index.js"></script>
+</head>
+<body class="page-home">
+	<div class="page-bg"></div>
+	<main class="shell shell-home">
+		<header class="topbar">
+			<a class="brand" href="/">
+				<span class="brand-mark">ST</span>
+				<span>
+					<strong>Self Tier List</strong>
+					<small>Auto-hébergé, multi-utilisateur, persistant</small>
+				</span>
+			</a>
+			<nav class="topbar-actions">
+				<a class="ghost-button" href="/login.html">Se connecter</a>
+				<a class="button" href="/tierlist.html">Tableau de bord</a>
+			</nav>
+		</header>
+
+		<section class="hero card">
+			<div class="hero-copy">
+				<p class="eyebrow">Premier produit fonctionnel</p>
+				<h1>Construis des tier lists vivantes, reliées à ton API et à ta base PostgreSQL.</h1>
+				<p class="lead">
+					Une interface simple pour créer des comptes, gérer tes tier lists, uploader des images hashées et
+					modifier le JSONB directement depuis le navigateur.
+				</p>
+				<div class="hero-actions">
+					<a class="button button-primary" href="/login.html">Créer un compte</a>
+					<a class="ghost-button" href="/tierlist.html">Ouvrir le dashboard</a>
+				</div>
+			</div>
+			<div class="hero-panel">
+				<div class="stat-grid">
+					<article class="stat-card">
+						<span>Auth</span>
+						<strong>JWT</strong>
+						<small>Connexion et compte utilisateur</small>
+					</article>
+					<article class="stat-card">
+						<span>Data</span>
+						<strong>JSONB</strong>
+						<small>Structure flexible des tier lists</small>
+					</article>
+					<article class="stat-card">
+						<span>Images</span>
+						<strong>SHA256</strong>
+						<small>Upload, déduplication et preview</small>
+					</article>
+					<article class="stat-card">
+						<span>Déploiement</span>
+						<strong>Docker</strong>
+						<small>Prêt pour un serveur léger</small>
+					</article>
+				</div>
+			</div>
+		</section>
+
+		<section class="content-grid">
+			<article class="card feature-card">
+				<p class="card-kicker">Flux rapide</p>
+				<h2>Du login à l’édition en quelques clics</h2>
+				<ol class="steps">
+					<li>Créer ou ouvrir un compte.</li>
+					<li>Accéder au dashboard et créer une tier list.</li>
+					<li>Modifier les tiers, les items et les images.</li>
+					<li>Sauvegarder, dupliquer ou supprimer via l’API.</li>
+				</ol>
+			</article>
+
+			<article class="card feature-card accent-card">
+				<p class="card-kicker">Connexion</p>
+				<h2>Le front essaie automatiquement la bonne base API.</h2>
+				<p>
+					Par défaut, l’application teste <strong>/api</strong> puis <strong>http://localhost:8000</strong>.
+					Tu peux aussi fixer une base API dans le navigateur si ton déploiement est différent.
+				</p>
+				<a class="text-link" href="/login.html">Aller à l’authentification</a>
+			</article>
+		</section>
+	</main>
+</body>
+</html>

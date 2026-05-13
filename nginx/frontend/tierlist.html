@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Dashboard - Self Tier List</title>
+	<link rel="stylesheet" href="/assets/css/style.css">
+	<script type="module" src="/assets/js/tierlist.js"></script>
+</head>
+<body class="page-tierlist">
+	<div class="page-bg"></div>
+	<main class="shell shell-wide">
+		<header class="topbar compact">
+			<a class="brand" href="/">
+				<span class="brand-mark">ST</span>
+				<span>
+					<strong>Self Tier List</strong>
+					<small>Dashboard et éditeur</small>
+				</span>
+			</a>
+			<nav class="topbar-actions">
+				<a class="ghost-button" href="/profile.html">Profil</a>
+				<button class="ghost-button" type="button" data-logout>Déconnexion</button>
+			</nav>
+		</header>
+
+		<section class="dashboard-layout">
+			<aside class="card sidebar-panel">
+				<p class="card-kicker">Session</p>
+				<h1 data-dashboard-user>Chargement...</h1>
+				<p class="lead" data-dashboard-summary>Récupération de tes tier lists.</p>
+
+				<div class="stacked-meta">
+					<div class="mini-stat"><span>Mes listes</span><strong data-count-owned>0</strong></div>
+					<div class="mini-stat"><span>Publiques visibles</span><strong data-count-public>0</strong></div>
+					<div class="mini-stat"><span>API</span><strong data-api-base>auto</strong></div>
+				</div>
+
+				<button class="button button-primary full-width" type="button" data-create-tierlist>Nouvelle tier list</button>
+
+				<label class="search-box">
+					<span>Rechercher</span>
+					<input type="search" placeholder="Nom, description, tag..." data-tierlist-search>
+				</label>
+			</aside>
+
+			<section class="dashboard-main">
+				<article class="card list-panel">
+					<div class="panel-header">
+						<div>
+							<p class="card-kicker">Catalogue</p>
+							<h2>Mes tier lists et les tier lists publiques</h2>
+						</div>
+						<button class="ghost-button" type="button" data-refresh-tierlists>Actualiser</button>
+					</div>
+
+					<div class="empty-state hidden" data-empty-tierlists>
+						Aucune tier list pour le moment. Crée-en une pour commencer.
+					</div>
+
+					<div class="tierlist-grid" data-tierlist-grid></div>
+				</article>
+
+				<article class="card editor-panel" data-editor-panel>
+					<div class="panel-header">
+						<div>
+							<p class="card-kicker">Éditeur</p>
+							<h2 data-editor-title>Sélectionne une tier list</h2>
+						</div>
+						<div class="inline-actions">
+							<button class="ghost-button" type="button" data-duplicate-tierlist disabled>Dupliquer</button>
+							<button class="ghost-button" type="button" data-delete-tierlist disabled>Supprimer</button>
+							<button class="button button-primary" type="button" data-save-tierlist disabled>Enregistrer</button>
+						</div>
+					</div>
+
+					<div class="editor-body" data-editor-body>
+						<div class="empty-state">
+							Ouvre une tier list pour modifier son JSONB, ses items et ses images.
+						</div>
+					</div>
+				</article>
+			</section>
+		</section>
+
+		<div class="form-message" data-dashboard-message></div>
+	</main>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Profil - Self Tier List</title>
+	<link rel="stylesheet" href="/assets/css/style.css">
+	<script type="module" src="/assets/js/profile.js"></script>
+</head>
+<body class="page-profile">
+	<div class="page-bg"></div>
+	<main class="shell">
+		<header class="topbar compact">
+			<a class="brand" href="/tierlist.html">
+				<span class="brand-mark">ST</span>
+				<span>
+					<strong>Self Tier List</strong>
+					<small>Profil utilisateur</small>
+				</span>
+			</a>
+			<nav class="topbar-actions">
+				<a class="ghost-button" href="/tierlist.html">Dashboard</a>
+				<button class="ghost-button" type="button" data-logout>Déconnexion</button>
+			</nav>
+		</header>
+
+		<section class="content-grid profile-grid">
+			<article class="card profile-summary">
+				<p class="card-kicker">Compte connecté</p>
+				<h1 data-profile-title>Chargement...</h1>
+				<p class="lead" data-profile-subtitle>Récupération de tes informations utilisateur.</p>
+				<dl class="meta-list">
+					<div><dt>Pseudo</dt><dd data-user-pseudo>-</dd></div>
+					<div><dt>Username</dt><dd data-user-username>-</dd></div>
+					<div><dt>Admin</dt><dd data-user-admin>-</dd></div>
+					<div><dt>Créé le</dt><dd data-user-created>-</dd></div>
+				</dl>
+			</article>
+
+			<article class="card form-card">
+				<p class="card-kicker">Mise à jour</p>
+				<h2>Modifier le compte</h2>
+				<form class="stack-form" data-profile-form="update">
+					<label>
+						<span>Mot de passe actuel</span>
+						<input type="password" name="password" autocomplete="current-password" required>
+					</label>
+					<label>
+						<span>Nouveau pseudo</span>
+						<input name="new_pseudo" autocomplete="nickname">
+					</label>
+					<label>
+						<span>Nouveau nom d’utilisateur</span>
+						<input name="new_username" autocomplete="username">
+					</label>
+					<label>
+						<span>Nouveau mot de passe</span>
+						<input type="password" name="new_password" autocomplete="new-password" minlength="3">
+					</label>
+					<button class="button button-primary" type="submit">Enregistrer</button>
+				</form>
+			</article>
+
+			<article class="card danger-card">
+				<p class="card-kicker">Zone sensible</p>
+				<h2>Supprimer le compte</h2>
+				<p>La suppression demande le mot de passe actuel et efface le compte connecté.</p>
+				<form class="stack-form" data-profile-form="delete">
+					<label>
+						<span>Mot de passe</span>
+						<input type="password" name="password" autocomplete="current-password" required>
+					</label>
+					<button class="button button-danger" type="submit">Supprimer mon compte</button>
+				</form>
+			</article>
+		</section>
+
+		<div class="form-message" data-profile-message></div>
+	</main>
+</body>
+</html>
