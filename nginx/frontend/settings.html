@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paramètres - Compte</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .settings-container {
+      max-width: 600px;
+      margin: 40px auto;
+    }
+    .settings-section {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 30px;
+      margin-bottom: 20px;
+    }
+    .settings-section h3 {
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar"></nav>
+
+  <div class="page">
+    <div class="settings-container">
+      <div style="margin-bottom: 40px;">
+        <h1 style="font-size: 32px; font-weight: 800; margin-bottom: 8px;">⚙️ Paramètres du Compte</h1>
+        <p style="color: var(--text-light);">Gérez votre compte et vos préférences</p>
+      </div>
+
+      <!-- Informations utilisateur -->
+      <div class="settings-section">
+        <h3>👤 Informations Actuelles</h3>
+        <div id="user-info" style="padding: 15px; background: var(--light); border-radius: var(--radius);">
+          <!-- Chargé dynamiquement -->
+        </div>
+      </div>
+
+      <!-- Modifier le pseudo -->
+      <div class="settings-section">
+        <h3>⭐ Modifier votre Pseudo</h3>
+        <form id="update-pseudo-form">
+          <div class="form-group">
+            <label for="new-pseudo">Votre nouveau surnom</label>
+            <input type="text" id="new-pseudo" placeholder="Votre nouveau pseudo">
+          </div>
+          <div class="form-group">
+            <label for="pseudo-password">🔒 Confirmez avec votre mot de passe</label>
+            <input type="password" id="pseudo-password" placeholder="Confirmez votre mot de passe" required>
+          </div>
+          <button type="submit" class="btn btn-primary">💾 Mettre à jour</button>
+        </form>
+      </div>
+
+      <!-- Modifier le nom d'utilisateur -->
+      <div class="settings-section">
+        <h3>👤 Modifier votre Nom d'Utilisateur</h3>
+        <form id="update-username-form">
+          <div class="form-group">
+            <label for="new-username">Votre nouvel identifiant</label>
+            <input type="text" id="new-username" placeholder="Votre nouveau nom d'utilisateur">
+          </div>
+          <div class="form-group">
+            <label for="username-password">🔒 Confirmez avec votre mot de passe</label>
+            <input type="password" id="username-password" placeholder="Confirmez votre mot de passe" required>
+          </div>
+          <button type="submit" class="btn btn-primary">💾 Mettre à jour</button>
+        </form>
+      </div>
+
+      <!-- Modifier le mot de passe -->
+      <div class="settings-section">
+        <h3>🔒 Changer votre Mot de Passe</h3>
+        <form id="update-password-form">
+          <div class="form-group">
+            <label for="old-password">Votre mot de passe actuel</label>
+            <input type="password" id="old-password" placeholder="Votre mot de passe actuel" required>
+          </div>
+          <div class="form-group">
+            <label for="new-password">Votre nouveau mot de passe</label>
+            <input type="password" id="new-password" placeholder="Votre nouveau mot de passe" required>
+          </div>
+          <button type="submit" class="btn btn-primary">💾 Mettre à jour</button>
+        </form>
+      </div>
+
+      <!-- Zone de danger -->
+      <div class="settings-section" style="border-left: 4px solid var(--danger);">
+        <h3 style="color: var(--danger);">⚠️ Zone de Danger</h3>
+        <p style="color: var(--text-light); margin-bottom: 20px; font-weight: 500;">
+          Cette action est irréversible. Votre compte et toutes vos données seront supprimés.
+        </p>
+        <form id="delete-account-form">
+          <div class="form-group">
+            <label for="delete-password">🔒 Confirmez votre mot de passe</label>
+            <input type="password" id="delete-password" placeholder="Confirmez votre mot de passe" required>
+          </div>
+          <button type="submit" class="btn btn-danger btn-block">🗑️ Supprimer mon compte</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/pages/settings.js"></script>
+</body>
+</html>

@@ -15,7 +15,9 @@ services:
       - default
   
   fastapi:
-    build: ./fastapi
+    build:
+      context: ./fastapi
+      dockerfile: Dockerfile
     image: selftierlist-fastapi:latest
     container_name: selftierlist_fastapi
     restart: unless-stopped
@@ -27,6 +29,19 @@ services:
       - URL_PATH_PREFIX=${URL_PATH_PREFIX}
     depends_on:
       - postgres
+    networks:
+      - default
+  
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: selftierlist-nginx:latest
+    container_name: selftierlist-nginx
+    ports:
+      - 8888:80
+    depends_on:
+      - fastapi
     networks:
       - default
 

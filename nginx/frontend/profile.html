@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon Profil</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <nav class="navbar"></nav>
+
+  <div class="page">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; margin-top: 30px;">
+        <div>
+          <h1 style="font-size: 32px; font-weight: 800; margin-bottom: 8px;">📚 Mes Tier Lists</h1>
+          <p style="color: var(--text-light);">Gérez et partagez vos créations</p>
+        </div>
+        <button id="new-tierlist-btn" class="btn btn-primary">+ Nouvelle Tier List</button>
+      </div>
+
+      <div id="tierlists-container" class="grid">
+        <!-- Les tier lists seront chargées ici -->
+      </div>
+
+      <div id="empty-state" style="text-align: center; padding: 80px 20px; color: var(--text-light);">
+        <div style="font-size: 64px; margin-bottom: 20px;">🚀</div>
+        <p style="font-size: 18px; margin-bottom: 10px; font-weight: 600;">Vous n'avez pas encore de tier list</p>
+        <p style="margin-bottom: 30px;">Créez votre première tier list et commencez à classer vos éléments préférés !</p>
+        <button id="empty-new-btn" class="btn btn-primary">Créer une Tier List</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/pages/profile.js"></script>
+</body>
+</html>

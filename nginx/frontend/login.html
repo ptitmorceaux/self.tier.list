@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion / Inscription</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <nav class="navbar"></nav>
+
+  <div class="page">
+    <div class="form-card">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="font-size: 48px; margin-bottom: 15px;">🎮</div>
+        <h2>Bienvenue</h2>
+        <p style="color: var(--text-light); margin-top: 10px;">Connectez-vous ou créez un compte</p>
+      </div>
+
+      <!-- Onglets -->
+      <div style="display: flex; gap: 0; margin-bottom: 30px; border-bottom: 2px solid var(--light-gray);">
+        <button id="tab-login" class="tab-btn active" style="flex: 1;">
+          🔐 Connexion
+        </button>
+        <button id="tab-register" class="tab-btn" style="flex: 1;">
+          ✍️ Inscription
+        </button>
+      </div>
+
+      <!-- Formulaire de connexion -->
+      <form id="login-form" class="form-section">
+        <div class="form-group">
+          <label for="login-username">👤 Nom d'utilisateur</label>
+          <input type="text" id="login-username" placeholder="Entrez votre identifiant" required>
+        </div>
+
+        <div class="form-group">
+          <label for="login-password">🔒 Mot de passe</label>
+          <input type="password" id="login-password" placeholder="Entrez votre mot de passe" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+      </form>
+
+      <!-- Formulaire d'inscription -->
+      <form id="register-form" class="form-section" style="display: none;">
+        <div class="form-group">
+          <label for="register-pseudo">⭐ Pseudo (surnom public)</label>
+          <input type="text" id="register-pseudo" placeholder="Votre surnom public" required>
+        </div>
+
+        <div class="form-group">
+          <label for="register-username">👤 Nom d'utilisateur</label>
+          <input type="text" id="register-username" placeholder="Votre identifiant (min. 3 caractères)" required>
+        </div>
+
+        <div class="form-group">
+          <label for="register-password">🔒 Mot de passe</label>
+          <input type="password" id="register-password" placeholder="Votre mot de passe (min. 3 caractères)" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">S'inscrire</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/pages/login.js"></script>
+</body>
+</html>

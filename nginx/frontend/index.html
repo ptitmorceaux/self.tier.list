@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tier List - Créez et Partagez vos Listes</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <nav class="navbar"></nav>
+
+  <div class="page">
+    <div class="container">
+      <div class="hero">
+        <h1>✨ Créez vos Tier Lists</h1>
+        <p>
+          Classez vos éléments préférés facilement et partagez-les avec la communauté
+        </p>
+      </div>
+
+      <div style="margin-bottom: 60px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+          <h2 style="font-size: 24px; font-weight: 800; margin: 0;">🌟 Tier Lists Populaires</h2>
+          <div id="refresh-container"></div>
+        </div>
+        
+        <div id="tierlists-container" class="grid">
+          <!-- Les tier lists seront chargées ici -->
+        </div>
+        <div id="empty-state" style="text-align: center; padding: 80px 20px; color: var(--text-light);">
+          <div style="margin-bottom: 20px; font-size: 48px;">🎯</div>
+          <p style="font-size: 18px; margin-bottom: 20px; font-weight: 600;">Aucune tier list disponible</p>
+          <p style="margin-bottom: 30px;">Connectez-vous pour découvrir et créer vos tier lists !</p>
+          <a href="login.html" class="btn btn-primary">Se connecter</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/pages/index.js"></script>
+</body>
+</html>
