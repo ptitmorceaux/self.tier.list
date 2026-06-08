@@ -4,7 +4,7 @@ from io import BytesIO
 
 from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
 from fastapi.responses import FileResponse
-from PIL import Image as PILImage
+from PIL import Image as PILImage, ImageOps
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,6 +17,8 @@ from schemas.image import ImageDeleteResponse, ImageUploadResponse
 router = APIRouter(tags=["Image"])
 
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "/uploads")
+MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", 5 * 1024 * 1024))  # 5 MB
+NORMALIZED_IMAGE_SIZE = int(os.getenv("NORMALIZED_IMAGE_SIZE", 256))
 
 
 @router.post("/upload", response_model=ImageUploadResponse, status_code=201)
@@ -34,13 +36,20 @@ async def upload_image(
     raw = await file.read()
     if not raw:
         raise HTTPException(status_code=400, detail="Empty file")
+    if len(raw) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="Image too large (max 5 MB)")
 
     try:
         source = PILImage.open(BytesIO(raw)).convert("RGBA")
     except Exception as exc:
         raise HTTPException(status_code=400, detail="Invalid image payload") from exc
 
-    normalized = source.resize((50, 50), PILImage.Resampling.LANCZOS)
+    normalized = ImageOps.fit(
+        source,
+        (NORMALIZED_IMAGE_SIZE, NORMALIZED_IMAGE_SIZE),
+        method=PILImage.Resampling.LANCZOS,
+        centering=(0.5, 0.5),
+    )
     image_hash = hashlib.sha256(normalized.tobytes()).hexdigest()
 
     existing = (await db.execute(select(Image).where(Image.hash == image_hash))).scalar_one_or_none()

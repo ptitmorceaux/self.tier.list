@@ -55,7 +55,7 @@ nginx/frontend/
 - **Mode Éditeur** (propriétaire seulement) :
   - Éditer titre, description, visibilité (public/privé)
   - Drag & drop des images entre les tiers
-  - Upload d'images (> 5MB rejection)
+  - Upload d'images (rejet > 5 MB)
   - Bouton "Réinitialiser" : tout dans _blank
   - Bouton "Supprimer" : supprime la tier list
   - Bouton "Enregistrer" : sauvegarde les modifications
@@ -157,7 +157,7 @@ Gère l'intégralité de la logique d'édition des tier lists.
 
 ### Sauvegarde des données
 - **Tier lists** : Sauvegardées dans la BD avec JSONB
-- **Images** : Uploadées sur le serveur (WebP 50x50)
+- **Images** : Uploadées sur le serveur (WebP 256x256, crop carré centré)
 - **Authentification** : Token JWT valide 24h par défaut
 
 ### Édition en temps réel

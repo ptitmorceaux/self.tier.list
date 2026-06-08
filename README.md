@@ -88,7 +88,7 @@ Le projet est un outil web permettant de créer, modifier, dupliquer et partager
 ## Images
 
 * Les images sont stockées sur le serveur avec un nom basé sur leur **hash SHA256**, ce qui évite les doublons.
-* Endpoint upload: l'API reçoit une image, la convertit/normalise en **WebP 50x50**, puis calcule son hash SHA256 à partir des pixels normalisés.
+* Endpoint upload: l'API reçoit une image, rejette les fichiers au-dessus de **5 MB**, la recadre en carré centré, la normalise en **WebP 256x256**, puis calcule son hash SHA256 à partir des pixels normalisés.
 * Ce hash devient l'identifiant unique de l'image (ID logique).
 * Une table `image` contient `hash`, `path`, `created_at`.
 * Une table `image_tierlist` gère la relation n↔n entre images et tier lists. Cela permet de savoir si une image est utilisée avant suppression.
@@ -151,8 +151,9 @@ Le projet est un outil web permettant de créer, modifier, dupliquer et partager
 
 Comportement recommandé pour `POST /upload`:
 
-* Si l'image normalisée (WebP 50x50) n'existe pas encore: créer l'entrée et répondre `201 Created` avec le `hash`.
+* Si l'image normalisée (WebP 256x256) n'existe pas encore: créer l'entrée et répondre `201 Created` avec le `hash`.
 * Si l'image existe déjà (même hash): ne rien recréer et répondre `200 OK` avec le même `hash`.
+* Si le fichier dépasse la limite serveur: répondre `413 Payload Too Large` avec un message explicite.
 
 Exemples de réponses:
 
