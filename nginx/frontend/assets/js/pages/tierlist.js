@@ -499,23 +499,21 @@ class TierlistApp {
     this.draggedElement.classList.add('dragging');
   }
 
-  handleDrop(e, targetTierId) {
+  async handleDrop(e, targetTierId) {
     e.preventDefault();
-
     if (!this.draggedElement) return;
 
     const hash = this.draggedElement.dataset.hash;
     const name = this.draggedElement.title || `Image ${hash}`;
 
-    // Retirer de la source
+    // 1. Retirer de la source
     if (this.draggedFrom.source === 'tier') {
       this.removeItemFromTier(this.draggedFrom.tierId, hash);
     } else if (this.draggedFrom.source === 'unclassified') {
-      // Retirer des images non classées
       delete this.unclassifiedImages[hash];
     }
 
-    // Ajouter à la cible
+    // 2. Ajouter à la tier cible
     const targetTier = this.tierlist.data.tiers.find(t => t.id === targetTierId);
     if (targetTier && !targetTier.items.find(i => i.image_hash === hash)) {
       targetTier.items.push({ name, image_hash: hash });
@@ -524,8 +522,12 @@ class TierlistApp {
     this.draggedElement.classList.remove('dragging');
     this.draggedElement = null;
 
+    // 3. Mettre à jour l'affichage
     this.renderEditorTierlist();
     this.renderUnclassifiedImages();
+
+    // 4. Sauvegarde automatique en BDD !
+    await this.autoSave();
   }
 
   removeItemFromTier(tierId, hash) {
