@@ -542,17 +542,17 @@ class TierlistApp {
     document.getElementById('delete-btn').addEventListener('click', () => this.deleteTierlist());
   }
 
-  async saveTierlist() {
+  async saveTierlist(isAutoSave = false) {
     const name = document.getElementById('title-input').value.trim();
     const description = document.getElementById('description-input').value.trim();
     const isPrivate = document.getElementById('privacy-select').value === 'true';
 
     if (!name) {
-      Toast.error('Veuillez entrer un titre');
+      if (!isAutoSave) Toast.error('Veuillez entrer un titre');
       return;
     }
 
-    // Nettoyer les images non classées du data
+    // Synchronisation du tier _blank
     const blankTier = this.tierlist.data.tiers.find(t => t.id === 0);
     if (blankTier) {
       blankTier.items = Object.values(this.unclassifiedImages).map(img => ({
@@ -562,23 +562,34 @@ class TierlistApp {
     }
 
     try {
-      Loading.show('Enregistrement...');
+      // Si c'est un clic manuel, on affiche le loader
+      if (!isAutoSave) Loading.show('Enregistrement...');
 
       if (this.tierlist.id) {
         await api.updateTierlist(this.tierlist.id, name, description, this.tierlist.data, isPrivate);
       } else {
         const response = await api.createTierlist(Auth.getUser().id, name, description, this.tierlist.data, isPrivate);
         this.tierlist.id = response.data.id;
+        this.tierlistId = response.data.id;
+        // On met à jour l'URL sans recharger la page
+        window.history.replaceState({}, '', `tierlist.html?id=${this.tierlist.id}`);
       }
 
-      Loading.hide();
-      Toast.success('Tier list enregistrée !');
-      setTimeout(() => {
-        window.location.href = `tierlist.html?id=${this.tierlist.id}`;
-      }, 500);
+      // Si c'est un clic manuel, on notifie et recharche la page
+      if (!isAutoSave) {
+        Loading.hide();
+        Toast.success('Tier list enregistrée !');
+        setTimeout(() => {
+          window.location.href = `tierlist.html?id=${this.tierlist.id}`;
+        }, 500);
+      }
     } catch (error) {
-      Loading.hide();
-      Toast.error('Erreur lors de l\'enregistrement');
+      if (!isAutoSave) {
+        Loading.hide();
+        Toast.error('Erreur lors de l\'enregistrement');
+      } else {
+        console.error('Erreur auto-save:', error);
+      }
     }
   }
 
