@@ -30,13 +30,22 @@ class APIClient {
 
     try {
       const response = await fetch(url, options);
-      const result = await response.json();
+      const contentType = response.headers.get('content-type') || '';
 
-      if (!response.ok) {
-        throw new APIError(result.detail || 'Une erreur est survenue', response.status, result);
+      // Si le serveur renvoie du JSON
+      if (contentType.includes('application/json')) {
+        const result = await response.json();
+        if (!response.ok) {
+          const message = result.detail || result.message || 'Une erreur est survenue';
+          throw new APIError(message, response.status, result);
+        }
+        return result;
       }
 
-      return result;
+      // Si le serveur renvoie autre chose (HTML par exemple), lire le texte et remonter une erreur claire
+      const text = await response.text();
+      const statusText = response.status ? `${response.status} ${response.statusText}` : 'Erreur serveur';
+      throw new APIError(`Réponse inattendue du serveur (${statusText})`, response.status, { text });
     } catch (error) {
       if (error instanceof APIError) {
         throw error;
