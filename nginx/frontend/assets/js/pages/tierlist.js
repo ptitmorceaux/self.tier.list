@@ -542,6 +542,10 @@ class TierlistApp {
     document.getElementById('save-btn').addEventListener('click', () => this.saveTierlist());
     document.getElementById('reset-btn').addEventListener('click', () => this.resetTierlist());
     document.getElementById('delete-btn').addEventListener('click', () => this.deleteTierlist());
+    // À ajouter dans setupEventListeners()
+    document.getElementById('title-input').addEventListener('change', () => this.saveTierlist(true));
+    document.getElementById('description-input').addEventListener('change', () => this.saveTierlist(true));
+    document.getElementById('privacy-select').addEventListener('change', () => this.saveTierlist(true));
   }
 
   async saveTierlist(isAutoSave = false) {
