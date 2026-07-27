@@ -128,7 +128,7 @@ class APIClient {
   async uploadImage(file) {
     const formData = new FormData();
     formData.append('file', file);
-    
+
     const url = `${this.baseUrl}/upload`;
     const options = {
       method: 'POST',
@@ -137,21 +137,26 @@ class APIClient {
       },
       body: formData,
     };
-
     try {
       const response = await fetch(url, options);
-      const result = await response.json();
+      const contentType = response.headers.get('content-type') || '';
 
+      // Si le serveur renvoie du HTML (page d'erreur 413, 502, etc.)
+      if (!contentType.includes('application/json')) {
+        if (response.status === 413) {
+          throw new APIError('L\'image est trop volumineuse pour le serveur (max 5 Mo)', 413);
+        }
+        throw new APIError(`Erreur serveur (${response.status})`, response.status);
+      }
+
+      const result = await response.json();
       if (!response.ok) {
         throw new APIError(result.detail || 'Erreur upload', response.status);
       }
-
       return result;
     } catch (error) {
-      if (error instanceof APIError) {
-        throw error;
-      }
-      throw new APIError(error.message, 0);
+      if (error instanceof APIError) throw error;
+      throw new APIError(error.message || 'Erreur lors de l\'upload', 0);
     }
   }
 
