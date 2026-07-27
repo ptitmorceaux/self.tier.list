@@ -2,8 +2,8 @@
 *.env
 postgres/data/*
 
-fastapi/uploads/*
-!fastapi/uploads/.gitkeep
+uploads/*
+!uploads/.gitkeep
 
 ########################################################################
 # Python.gitignore
