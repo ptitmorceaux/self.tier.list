@@ -10,7 +10,6 @@ class TierlistApp {
     this.unclassifiedImages = {};
     this.draggedElement = null;
     this.draggedFrom = null;
-    this.isCreatingNew = false;
   }
 
   getTierlistId() {
@@ -25,24 +24,30 @@ class TierlistApp {
         return;
       }
 
-      Navbar.render(true, Auth.getUser());
+      const user = Auth.getUser();
+      if (!user || !user.id) {
+        Toast.error("Session invalide. Veuillez vous reconnecter.");
+        Auth.logout();
+        return;
+      }
+
+      Navbar.render(true, user);
       this.setupEventListeners();
 
       if (this.tierlistId) {
-        // Mode consultation/édition
+        // Mode consultation / édition d'une tierlist existante
         await this.loadTierlist();
       } else {
-        // Mode création : on demande le titre via la pop-up
-        this.startCreationFlow();
+        // Mode création d'une nouvelle tierlist
+        this.createNewTierlist();
       }
     } catch (error) {
-      console.error('Erreur init:', error);
-      Toast.error('Erreur lors du chargement');
+      console.error('Erreur init :', error);
+      Toast.error('Erreur lors du chargement de la page');
     }
   }
 
-  startCreationFlow() {
-    this.isCreatingNew = true;
+  createNewTierlist() {
     this.tierlist = {
       id: null,
       name: '',
@@ -60,7 +65,7 @@ class TierlistApp {
       },
     };
     this.isOwner = true;
-    this.openMetaModal(true);
+    this.showEditorMode();
   }
 
   async loadTierlist() {
@@ -85,111 +90,8 @@ class TierlistApp {
     } catch (error) {
       Loading.hide();
       console.error('Erreur load:', error);
-      if (error.status === 403) {
-        window.location.href = 'index.html';
-      } else {
-        Toast.error('Tier list non trouvée');
-        setTimeout(() => window.location.href = 'index.html', 1000);
-      }
-    }
-  }
-
-  showViewerMode() {
-    document.getElementById('viewer-mode').style.display = 'block';
-    document.getElementById('editor-mode').style.display = 'none';
-
-    document.getElementById('viewer-title').textContent = this.tierlist.name;
-    document.getElementById('viewer-description').textContent = this.tierlist.description || 'Pas de description';
-    document.getElementById('viewer-creator').textContent = `Créée le ${new Date(this.tierlist.created_at).toLocaleDateString('fr-FR')}`;
-
-    const actionsContainer = document.getElementById('viewer-actions');
-    actionsContainer.innerHTML = '';
-
-    if (Auth.isAuthenticated()) {
-      const copyBtn = document.createElement('button');
-      copyBtn.className = 'btn btn-primary';
-      copyBtn.textContent = '📋 Copier cette tier list';
-      copyBtn.addEventListener('click', () => this.copyTierlist());
-      actionsContainer.appendChild(copyBtn);
-    }
-
-    this.renderViewerTierlist();
-  }
-
-  async copyTierlist() {
-    try {
-      Loading.show('Duplication en cours...');
-      const response = await api.duplicateTierlist(this.tierlistId, 1);
-      Loading.hide();
-
-      const newId = response.data.id;
-      Toast.success('Tier list dupliquée !');
-      setTimeout(() => {
-        window.location.href = `tierlist.html?id=${newId}`;
-      }, 500);
-    } catch (error) {
-      Loading.hide();
-      Toast.error('Erreur lors de la duplication');
-    }
-  }
-
-  renderViewerTierlist() {
-    const container = document.getElementById('viewer-tierlist');
-    container.innerHTML = '';
-
-    const tiers = this.tierlist.data.tiers;
-    const order = this.tierlist.data.order || [];
-
-    // 1. Vrais rangs dans la grille
-    order.forEach(tierId => {
-      if (tierId === 0) return; // Ignorer _blank dans la grille
-
-      const tier = tiers.find(t => t.id === tierId);
-      if (!tier) return;
-
-      const tierColumn = document.createElement('div');
-      tierColumn.className = 'tier-column';
-
-      const tierLabel = document.createElement('div');
-      tierLabel.className = 'tier-label';
-      tierLabel.style.backgroundColor = tier.color;
-      tierLabel.style.color = this.getContrastColor(tier.color);
-      tierLabel.textContent = tier.name;
-      tierColumn.appendChild(tierLabel);
-
-      const itemsContainer = document.createElement('div');
-      itemsContainer.className = 'tier-items';
-      tier.items.forEach(item => {
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'tier-item';
-        itemDiv.innerHTML = `<img src="${api.getImageUrl(item.image_hash)}" alt="${item.name}" title="${item.name}">`;
-        itemsContainer.appendChild(itemDiv);
-      });
-
-      tierColumn.appendChild(itemsContainer);
-      container.appendChild(tierColumn);
-    });
-
-    // 2. Images en attente en bas
-    const blankTier = tiers.find(t => t.id === 0);
-    const existingPool = document.getElementById('viewer-unclassified-section');
-    if (existingPool) existingPool.remove();
-
-    if (blankTier && blankTier.items && blankTier.items.length > 0) {
-      const unclassifiedSection = document.createElement('div');
-      unclassifiedSection.id = 'viewer-unclassified-section';
-      unclassifiedSection.className = 'images-pool';
-      unclassifiedSection.innerHTML = `
-        <h4>📦 Images en attente de classement</h4>
-        <div class="images-grid">
-          ${blankTier.items.map(item => `
-            <div class="upload-preview" style="cursor: default;">
-              <img src="${api.getImageUrl(item.image_hash)}" alt="${item.name}" title="${item.name}">
-            </div>
-          `).join('')}
-        </div>
-      `;
-      document.getElementById('viewer-mode').appendChild(unclassifiedSection);
+      Toast.error('Tier list introuvable');
+      setTimeout(() => window.location.href = 'index.html', 1000);
     }
   }
 
@@ -197,59 +99,63 @@ class TierlistApp {
     document.getElementById('viewer-mode').style.display = 'none';
     document.getElementById('editor-mode').style.display = 'block';
 
-    this.updateHeaderDOM();
-    document.getElementById('privacy-select').value = this.tierlist.is_private.toString();
+    const titleInput = document.getElementById('title-input');
+    const descInput = document.getElementById('description-input');
+    const saveMetaBtn = document.getElementById('save-meta-btn');
+    const contentSections = document.getElementById('tierlist-content-sections');
+    const metaTitle = document.getElementById('meta-section-title');
 
-    // Charger les images du tier _blank
-    const blankTier = this.tierlist.data.tiers.find(t => t.id === 0);
-    this.unclassifiedImages = {};
-    if (blankTier && blankTier.items) {
-      blankTier.items.forEach(item => {
-        this.unclassifiedImages[item.image_hash] = {
-          hash: item.image_hash,
-          name: item.name,
-        };
-      });
+    titleInput.value = this.tierlist.name || '';
+    descInput.value = this.tierlist.description || '';
+
+    if (this.tierlist.id) {
+      // --- TIERLIST DÉJÀ CRÉÉE EN BDD ---
+      metaTitle.textContent = "📝 Titre et Description";
+      saveMetaBtn.textContent = "Mettre à jour titre & description";
+      contentSections.style.display = 'block';
+
+      document.getElementById('privacy-select').value = this.tierlist.is_private.toString();
+
+      // Extraire les images non classées
+      const blankTier = this.tierlist.data.tiers.find(t => t.id === 0);
+      this.unclassifiedImages = {};
+      if (blankTier && blankTier.items) {
+        blankTier.items.forEach(item => {
+          this.unclassifiedImages[item.image_hash] = {
+            hash: item.image_hash,
+            name: item.name,
+          };
+        });
+      }
+
+      this.setupFileUpload();
+      this.renderEditorTierlist();
+      this.renderUnclassifiedImages();
+    } else {
+      // --- NOUVELLE TIERLIST (NON CRÉÉE) ---
+      metaTitle.textContent = "🆕 Créer une nouvelle Tier List";
+      saveMetaBtn.textContent = "Créer la Tier List";
+      contentSections.style.display = 'none';
+    }
+  }
+
+  async saveOrUpdateMeta(e) {
+    if (e) e.preventDefault();
+
+    const titleInput = document.getElementById('title-input');
+    const descInput = document.getElementById('description-input');
+
+    if (!titleInput) {
+      Toast.error("Champ titre introuvable dans la page");
+      return;
     }
 
-    this.setupFileUpload();
-    this.renderEditorTierlist();
-    this.renderUnclassifiedImages();
-  }
-
-  updateHeaderDOM() {
-    document.getElementById('editor-title').textContent = this.tierlist.name;
-    document.getElementById('editor-description').textContent = this.tierlist.description || 'Pas de description';
-  }
-
-  /* --- MODAL POP-UP (TITRE / DESCRIPTION) --- */
-
-  openMetaModal(isCreation = false) {
-    const modal = document.getElementById('meta-modal');
-    const modalTitle = document.getElementById('meta-modal-title');
-    const titleInput = document.getElementById('modal-title-input');
-    const descInput = document.getElementById('modal-desc-input');
-
-    modalTitle.textContent = isCreation ? 'Créer une nouvelle Tier List' : 'Modifier le Titre et la Description';
-    titleInput.value = isCreation ? '' : this.tierlist.name;
-    descInput.value = isCreation ? '' : (this.tierlist.description || '');
-
-    modal.style.display = 'flex';
-    setTimeout(() => titleInput.focus(), 100);
-  }
-
-  closeMetaModal() {
-    document.getElementById('meta-modal').style.display = 'none';
-  }
-
-  async submitMetaModal() {
-    const titleInput = document.getElementById('modal-title-input');
-    const descInput = document.getElementById('modal-desc-input');
     const title = titleInput.value.trim();
-    const description = descInput.value.trim();
+    const description = descInput ? descInput.value.trim() : '';
 
+    // Si le titre est vide, avertir l'utilisateur
     if (!title) {
-      Toast.error('Veuillez entrer un titre pour votre tier list');
+      Toast.warning('Veuillez d\'abord saisir un titre pour votre tier list');
       titleInput.focus();
       return;
     }
@@ -258,8 +164,8 @@ class TierlistApp {
     this.tierlist.description = description;
 
     try {
-      if (this.isCreatingNew || !this.tierlist.id) {
-        // Enregistrement initial en BDD
+      if (!this.tierlist.id) {
+        // --- CRÉATION EN BDD ---
         Loading.show('Création de la tier list...');
         const res = await api.createTierlist(
           Auth.getUser().id,
@@ -270,34 +176,37 @@ class TierlistApp {
         );
         Loading.hide();
 
+        if (!res || !res.data || !res.data.id) {
+          throw new Error("Réponse de l'API invalide lors de la création");
+        }
+
         this.tierlistId = res.data.id;
         this.tierlist.id = res.data.id;
-        this.isCreatingNew = false;
 
         // Mise à jour de l'URL sans recharger la page
         window.history.replaceState({}, '', `tierlist.html?id=${this.tierlistId}`);
-        Toast.success('Tier list créée ! Vous pouvez ajouter vos images.');
-      } else {
-        // Mise à jour titre/description
-        await this.saveTierlist(true);
-        Toast.success('Informations mises à jour');
-      }
+        Toast.success('Tier list créée ! Vous pouvez désormais ajouter des images.');
 
-      this.closeMetaModal();
-      this.showEditorMode();
+        // Révéler le reste des sections (upload, grille, visibilité)
+        this.showEditorMode();
+      } else {
+        // --- MISE À JOUR DE LA META ---
+        await this.saveTierlist(true);
+        Toast.success('Titre et description mis à jour');
+      }
     } catch (error) {
       Loading.hide();
-      Toast.error(`Erreur : ${error.message}`);
+      console.error('Erreur saveOrUpdateMeta :', error);
+      Toast.error(`Erreur : ${error.message || 'Impossible de créer la tier list'}`);
     }
   }
 
-  /* --- UPLOAD & GESTION DES IMAGES --- */
+  /* --- UPLOAD & IMAGES --- */
 
   setupFileUpload() {
     const uploadZone = document.getElementById('image-upload-zone');
     const fileInput = document.getElementById('image-input');
 
-    // Éviter d'attacher plusieurs fois les listeners
     if (uploadZone.dataset.setup) return;
     uploadZone.dataset.setup = 'true';
 
@@ -343,18 +252,16 @@ class TierlistApp {
     try {
       Loading.show(`Upload de ${file.name}...`);
       
-      // 1. Upload binaire
       const response = await api.uploadImage(file);
       const hash = response.data.hash;
       const imageName = file.name.replace(/\.[^.]+$/, '');
 
-      // 2. Mettre dans les images non classées
       this.unclassifiedImages[hash] = {
         hash: hash,
         name: imageName,
       };
 
-      // 3. Auto-save en BDD
+      // Auto-save immédiat en BDD
       await this.saveTierlist(true);
 
       Loading.hide();
@@ -371,7 +278,6 @@ class TierlistApp {
     const grid = document.getElementById('images-grid');
     grid.innerHTML = '';
 
-    // Zone de drop
     const dropZone = document.createElement('div');
     dropZone.style.cssText = 'flex: 1; min-width: 100%; min-height: 60px; border: 2px dashed var(--border); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--text-light); font-size: 12px;';
     dropZone.textContent = 'Déposer ici pour remettre dans les images en attente';
@@ -417,7 +323,7 @@ class TierlistApp {
     }
   }
 
-  /* --- RENDER EDITOR & DRAG AND DROP --- */
+  /* --- RENDER GRILLE & DRAG AND DROP --- */
 
   renderEditorTierlist() {
     const container = document.getElementById('tierlist-editor-container');
@@ -427,7 +333,7 @@ class TierlistApp {
     const order = this.tierlist.data.order || [];
 
     order.forEach(tierId => {
-      if (tierId === 0) return; // Ne jamais afficher le tier 0 sous forme de colonne
+      if (tierId === 0) return; // Ignorer le tier 0 (_blank) dans les colonnes
 
       const tier = tiers.find(t => t.id === tierId);
       if (!tier) return;
@@ -555,35 +461,29 @@ class TierlistApp {
     }
   }
 
-  /* --- EVENT LISTENERS & SAVE --- */
+  /* --- EVENT LISTENERS & AUTOSAVE --- */
 
   setupEventListeners() {
-    // Bouton modifier titre/description
-    document.getElementById('edit-meta-btn')?.addEventListener('click', () => this.openMetaModal(false));
+    const saveMetaBtn = document.getElementById('save-meta-btn');
+    if (saveMetaBtn) {
+      saveMetaBtn.onclick = (e) => this.saveOrUpdateMeta(e);
+    } else {
+      console.error("Bouton #save-meta-btn introuvable dans le DOM");
+    }
 
-    // Listeners Modal Pop-up
-    document.getElementById('meta-modal-submit')?.addEventListener('click', () => this.submitMetaModal());
-    document.getElementById('meta-modal-close')?.addEventListener('click', () => {
-      if (this.isCreatingNew) window.location.href = 'profile.html';
-      else this.closeMetaModal();
-    });
-    document.getElementById('meta-modal-cancel')?.addEventListener('click', () => {
-      if (this.isCreatingNew) window.location.href = 'profile.html';
-      else this.closeMetaModal();
-    });
-
-    // Visibilité
+    // Changement de visibilité avec Auto-Save
     document.getElementById('privacy-select')?.addEventListener('change', (e) => {
       this.tierlist.is_private = e.target.value === 'true';
       this.saveTierlist(true);
     });
 
-    // Actions principales
+    // Actions
     document.getElementById('reset-btn')?.addEventListener('click', () => this.resetTierlist());
     document.getElementById('delete-btn')?.addEventListener('click', () => this.deleteTierlist());
   }
 
   async saveTierlist(isAutoSave = false) {
+    // Auto-save disponible uniquement si la Tier List est créée en BDD
     if (!this.tierlistId) return;
 
     // Injecter les images non classées dans id: 0 (_blank)
@@ -606,16 +506,113 @@ class TierlistApp {
         this.tierlist.is_private
       );
 
-      this.updateHeaderDOM();
-
       if (!isAutoSave) {
         Loading.hide();
         Toast.success('Tier list enregistrée !');
       }
     } catch (error) {
       if (!isAutoSave) Loading.hide();
-      console.error('Erreur save:', error);
-      Toast.error("Échec de l'enregistrement");
+      console.error('Erreur auto-save:', error);
+      Toast.error("Échec de la sauvegarde automatique");
+    }
+  }
+
+  /* --- MODE VISUALISEUR --- */
+
+  showViewerMode() {
+    document.getElementById('viewer-mode').style.display = 'block';
+    document.getElementById('editor-mode').style.display = 'none';
+
+    document.getElementById('viewer-title').textContent = this.tierlist.name;
+    document.getElementById('viewer-description').textContent = this.tierlist.description || 'Pas de description';
+    document.getElementById('viewer-creator').textContent = `Créée le ${new Date(this.tierlist.created_at).toLocaleDateString('fr-FR')}`;
+
+    const actionsContainer = document.getElementById('viewer-actions');
+    actionsContainer.innerHTML = '';
+
+    if (Auth.isAuthenticated()) {
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'btn btn-primary';
+      copyBtn.textContent = '📋 Copier cette tier list';
+      copyBtn.addEventListener('click', () => this.copyTierlist());
+      actionsContainer.appendChild(copyBtn);
+    }
+
+    this.renderViewerTierlist();
+  }
+
+  async copyTierlist() {
+    try {
+      Loading.show('Duplication en cours...');
+      const response = await api.duplicateTierlist(this.tierlistId, 1);
+      Loading.hide();
+
+      const newId = response.data.id;
+      Toast.success('Tier list dupliquée !');
+      setTimeout(() => {
+        window.location.href = `tierlist.html?id=${newId}`;
+      }, 500);
+    } catch (error) {
+      Loading.hide();
+      Toast.error('Erreur lors de la duplication');
+    }
+  }
+
+  renderViewerTierlist() {
+    const container = document.getElementById('viewer-tierlist');
+    container.innerHTML = '';
+
+    const tiers = this.tierlist.data.tiers;
+    const order = this.tierlist.data.order || [];
+
+    order.forEach(tierId => {
+      if (tierId === 0) return;
+
+      const tier = tiers.find(t => t.id === tierId);
+      if (!tier) return;
+
+      const tierColumn = document.createElement('div');
+      tierColumn.className = 'tier-column';
+
+      const tierLabel = document.createElement('div');
+      tierLabel.className = 'tier-label';
+      tierLabel.style.backgroundColor = tier.color;
+      tierLabel.style.color = this.getContrastColor(tier.color);
+      tierLabel.textContent = tier.name;
+      tierColumn.appendChild(tierLabel);
+
+      const itemsContainer = document.createElement('div');
+      itemsContainer.className = 'tier-items';
+      tier.items.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'tier-item';
+        itemDiv.innerHTML = `<img src="${api.getImageUrl(item.image_hash)}" alt="${item.name}" title="${item.name}">`;
+        itemsContainer.appendChild(itemDiv);
+      });
+
+      tierColumn.appendChild(itemsContainer);
+      container.appendChild(tierColumn);
+    });
+
+    const blankTier = tiers.find(t => t.id === 0);
+    const existingPool = document.getElementById('viewer-unclassified-section');
+    if (existingPool) existingPool.remove();
+
+    if (blankTier && blankTier.items && blankTier.items.length > 0) {
+      const unclassifiedSection = document.createElement('div');
+      unclassifiedSection.id = 'viewer-unclassified-section';
+      unclassifiedSection.className = 'images-pool';
+      unclassifiedSection.innerHTML = `
+        <h4>📦 Images en attente de classement</h4>
+        <div class="images-grid">
+          ${blankTier.items.map(item => `
+            <div class="upload-preview" style="cursor: default;">
+              <img src="${api.getImageUrl(item.image_hash)}" alt="${item.name}" title="${item.name}">
+            </div>
+          `).join('')}
+        </div>
+      `;
+      document.getElementById('viewer-mode').appendChild(unclassifiedSection);
     }
   }
 
