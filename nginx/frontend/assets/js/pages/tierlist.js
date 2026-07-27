@@ -14,7 +14,8 @@ class TierlistApp {
 
   getTierlistId() {
     const params = new URLSearchParams(window.location.search);
-    return params.get('id') ? parseInt(params.get('id')) : null;
+    const idParam = params.get('id');
+    return idParam ? parseInt(idParam, 10) : null;
   }
 
   async init() {
@@ -26,7 +27,7 @@ class TierlistApp {
 
       const user = Auth.getUser();
       if (!user || !user.id) {
-        Toast.error("Session invalide. Veuillez vous reconnecter.");
+        Toast.error("Session utilisateur invalide. Veuillez vous reconnecter.");
         Auth.logout();
         return;
       }
@@ -34,25 +35,26 @@ class TierlistApp {
       Navbar.render(true, user);
       this.setupEventListeners();
 
-      if (this.tierlistId) {
-        // Mode consultation / édition d'une tierlist existante
+      if (this.tierlistId && !isNaN(this.tierlistId)) {
+        // Mode consultation / édition d'une tier list existante
         await this.loadTierlist();
       } else {
-        // Mode création d'une nouvelle tierlist
+        // Mode création d'une nouvelle tier list
         this.createNewTierlist();
       }
     } catch (error) {
-      console.error('Erreur init :', error);
-      Toast.error('Erreur lors du chargement de la page');
+      console.error('Erreur init détaillée :', error);
+      Toast.error(error.message || 'Erreur lors du chargement de la page');
     }
   }
 
   createNewTierlist() {
+    const user = Auth.getUser();
     this.tierlist = {
       id: null,
       name: '',
       description: '',
-      user_id: Auth.getUser().id,
+      user_id: user ? user.id : null,
       is_private: true,
       data: {
         tiers: [
@@ -75,7 +77,8 @@ class TierlistApp {
       Loading.hide();
 
       this.tierlist = response.data;
-      this.isOwner = this.tierlist.user_id === Auth.getUser().id;
+      const currentUser = Auth.getUser();
+      this.isOwner = currentUser && (this.tierlist.user_id === currentUser.id);
 
       if (this.tierlist.is_private && !this.isOwner) {
         window.location.href = 'index.html';
@@ -105,16 +108,17 @@ class TierlistApp {
     const contentSections = document.getElementById('tierlist-content-sections');
     const metaTitle = document.getElementById('meta-section-title');
 
-    titleInput.value = this.tierlist.name || '';
-    descInput.value = this.tierlist.description || '';
+    if (titleInput) titleInput.value = this.tierlist.name || '';
+    if (descInput) descInput.value = this.tierlist.description || '';
 
-    if (this.tierlist.id) {
+    if (this.tierlist && this.tierlist.id) {
       // --- TIERLIST DÉJÀ CRÉÉE EN BDD ---
-      metaTitle.textContent = "📝 Titre et Description";
-      saveMetaBtn.textContent = "Mettre à jour titre & description";
-      contentSections.style.display = 'block';
+      if (metaTitle) metaTitle.textContent = "📝 Titre et Description";
+      if (saveMetaBtn) saveMetaBtn.textContent = "Mettre à jour titre & description";
+      if (contentSections) contentSections.style.display = 'block';
 
-      document.getElementById('privacy-select').value = this.tierlist.is_private.toString();
+      const privacySelect = document.getElementById('privacy-select');
+      if (privacySelect) privacySelect.value = this.tierlist.is_private.toString();
 
       // Extraire les images non classées
       const blankTier = this.tierlist.data.tiers.find(t => t.id === 0);
@@ -132,31 +136,22 @@ class TierlistApp {
       this.renderEditorTierlist();
       this.renderUnclassifiedImages();
     } else {
-      // --- NOUVELLE TIERLIST (NON CRÉÉE) ---
-      metaTitle.textContent = "🆕 Créer une nouvelle Tier List";
-      saveMetaBtn.textContent = "Créer la Tier List";
-      contentSections.style.display = 'none';
+      // --- NOUVELLE TIERLIST (MASQUER LES SECTIONS INFERIEURES) ---
+      if (metaTitle) metaTitle.textContent = "🆕 Créer une nouvelle Tier List";
+      if (saveMetaBtn) saveMetaBtn.textContent = "Créer la Tier List";
+      if (contentSections) contentSections.style.display = 'none';
     }
   }
 
-  async saveOrUpdateMeta(e) {
-    if (e) e.preventDefault();
-
+  async saveOrUpdateMeta() {
     const titleInput = document.getElementById('title-input');
     const descInput = document.getElementById('description-input');
-
-    if (!titleInput) {
-      Toast.error("Champ titre introuvable dans la page");
-      return;
-    }
-
-    const title = titleInput.value.trim();
+    const title = titleInput ? titleInput.value.trim() : '';
     const description = descInput ? descInput.value.trim() : '';
 
-    // Si le titre est vide, avertir l'utilisateur
     if (!title) {
-      Toast.warning('Veuillez d\'abord saisir un titre pour votre tier list');
-      titleInput.focus();
+      Toast.error('Veuillez entrer un titre');
+      if (titleInput) titleInput.focus();
       return;
     }
 
@@ -167,8 +162,9 @@ class TierlistApp {
       if (!this.tierlist.id) {
         // --- CRÉATION EN BDD ---
         Loading.show('Création de la tier list...');
+        const user = Auth.getUser();
         const res = await api.createTierlist(
-          Auth.getUser().id,
+          user.id,
           title,
           description,
           this.tierlist.data,
@@ -177,7 +173,7 @@ class TierlistApp {
         Loading.hide();
 
         if (!res || !res.data || !res.data.id) {
-          throw new Error("Réponse de l'API invalide lors de la création");
+          throw new Error("Réponse API invalide");
         }
 
         this.tierlistId = res.data.id;
@@ -187,18 +183,37 @@ class TierlistApp {
         window.history.replaceState({}, '', `tierlist.html?id=${this.tierlistId}`);
         Toast.success('Tier list créée ! Vous pouvez désormais ajouter des images.');
 
-        // Révéler le reste des sections (upload, grille, visibilité)
+        // Déverrouiller les sections interactives
         this.showEditorMode();
       } else {
-        // --- MISE À JOUR DE LA META ---
+        // --- MISE À JOUR TIERLIST EXISTANTE ---
         await this.saveTierlist(true);
         Toast.success('Titre et description mis à jour');
       }
     } catch (error) {
       Loading.hide();
-      console.error('Erreur saveOrUpdateMeta :', error);
-      Toast.error(`Erreur : ${error.message || 'Impossible de créer la tier list'}`);
+      console.error('Erreur saveOrUpdateMeta:', error);
+      Toast.error(`Erreur : ${error.message || 'Impossible de sauvegarder'}`);
     }
+  }
+
+  setupEventListeners() {
+    const saveMetaBtn = document.getElementById('save-meta-btn');
+    if (saveMetaBtn) {
+      saveMetaBtn.onclick = () => this.saveOrUpdateMeta();
+    }
+
+    // Changement de visibilité (Auto-Save)
+    document.getElementById('privacy-select')?.addEventListener('change', (e) => {
+      if (this.tierlist) {
+        this.tierlist.is_private = e.target.value === 'true';
+        this.saveTierlist(true);
+      }
+    });
+
+    // Actions principales
+    document.getElementById('reset-btn')?.addEventListener('click', () => this.resetTierlist());
+    document.getElementById('delete-btn')?.addEventListener('click', () => this.deleteTierlist());
   }
 
   /* --- UPLOAD & IMAGES --- */
@@ -207,6 +222,7 @@ class TierlistApp {
     const uploadZone = document.getElementById('image-upload-zone');
     const fileInput = document.getElementById('image-input');
 
+    if (!uploadZone || !fileInput) return;
     if (uploadZone.dataset.setup) return;
     uploadZone.dataset.setup = 'true';
 
@@ -276,6 +292,7 @@ class TierlistApp {
 
   renderUnclassifiedImages() {
     const grid = document.getElementById('images-grid');
+    if (!grid) return;
     grid.innerHTML = '';
 
     const dropZone = document.createElement('div');
@@ -306,9 +323,11 @@ class TierlistApp {
 
   async removeImageAndSync(hash) {
     delete this.unclassifiedImages[hash];
-    this.tierlist.data.tiers.forEach(tier => {
-      tier.items = tier.items.filter(item => item.image_hash !== hash);
-    });
+    if (this.tierlist && this.tierlist.data && this.tierlist.data.tiers) {
+      this.tierlist.data.tiers.forEach(tier => {
+        tier.items = tier.items.filter(item => item.image_hash !== hash);
+      });
+    }
 
     try {
       Loading.show('Suppression...');
@@ -327,13 +346,14 @@ class TierlistApp {
 
   renderEditorTierlist() {
     const container = document.getElementById('tierlist-editor-container');
+    if (!container) return;
     container.innerHTML = '';
 
     const tiers = this.tierlist.data.tiers;
     const order = this.tierlist.data.order || [];
 
     order.forEach(tierId => {
-      if (tierId === 0) return; // Ignorer le tier 0 (_blank) dans les colonnes
+      if (tierId === 0) return; // Ignorer tier 0 (_blank) dans la grille des colonnes
 
       const tier = tiers.find(t => t.id === tierId);
       if (!tier) return;
@@ -401,7 +421,9 @@ class TierlistApp {
   handleDragStart(e, source, tierId = null) {
     this.draggedElement = e.target.closest('[data-hash]');
     this.draggedFrom = { source, tierId };
-    this.draggedElement.classList.add('dragging');
+    if (this.draggedElement) {
+      this.draggedElement.classList.add('dragging');
+    }
   }
 
   async handleDrop(e, targetTierId) {
@@ -461,32 +483,9 @@ class TierlistApp {
     }
   }
 
-  /* --- EVENT LISTENERS & AUTOSAVE --- */
-
-  setupEventListeners() {
-    const saveMetaBtn = document.getElementById('save-meta-btn');
-    if (saveMetaBtn) {
-      saveMetaBtn.onclick = (e) => this.saveOrUpdateMeta(e);
-    } else {
-      console.error("Bouton #save-meta-btn introuvable dans le DOM");
-    }
-
-    // Changement de visibilité avec Auto-Save
-    document.getElementById('privacy-select')?.addEventListener('change', (e) => {
-      this.tierlist.is_private = e.target.value === 'true';
-      this.saveTierlist(true);
-    });
-
-    // Actions
-    document.getElementById('reset-btn')?.addEventListener('click', () => this.resetTierlist());
-    document.getElementById('delete-btn')?.addEventListener('click', () => this.deleteTierlist());
-  }
-
   async saveTierlist(isAutoSave = false) {
-    // Auto-save disponible uniquement si la Tier List est créée en BDD
     if (!this.tierlistId) return;
 
-    // Injecter les images non classées dans id: 0 (_blank)
     const blankTier = this.tierlist.data.tiers.find(t => t.id === 0);
     if (blankTier) {
       blankTier.items = Object.values(this.unclassifiedImages).map(img => ({
@@ -560,6 +559,7 @@ class TierlistApp {
 
   renderViewerTierlist() {
     const container = document.getElementById('viewer-tierlist');
+    if (!container) return;
     container.innerHTML = '';
 
     const tiers = this.tierlist.data.tiers;

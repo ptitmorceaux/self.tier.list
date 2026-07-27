@@ -14,7 +14,7 @@
       <div class="tierlist-editor">
 
         <!-- Mode lecture (visiteur) -->
-        <div id="viewer-mode" class="viewer-only">
+        <div id="viewer-mode" class="viewer-only" style="display: none;">
           <div class="tierlist-header">
             <h1 id="viewer-title"></h1>
             <p id="viewer-description" style="color: var(--text-light); font-size: 16px; margin-top: 8px;"></p>
@@ -27,7 +27,7 @@
         <!-- Mode édition / création (propriétaire) -->
         <div id="editor-mode" class="editor-only">
           
-          <!-- SECTION 1 : Titre & Description (Seule section visible à la création) -->
+          <!-- SECTION 1 : Titre & Description -->
           <div class="card mb-20" style="padding: 24px; border: 1px solid var(--border);">
             <h3 id="meta-section-title" style="margin-bottom: 20px; font-size: 20px; font-weight: 700;">🆕 Créer une nouvelle Tier List</h3>
             
@@ -41,10 +41,10 @@
               <textarea id="description-input" class="form-control" placeholder="Ajoutez quelques détails..." style="min-height: 80px;"></textarea>
             </div>
 
-            <button id="save-meta-btn" class="btn btn-primary">Créer la Tier List</button>
+            <button id="save-meta-btn" type="button" class="btn btn-primary">Créer la Tier List</button>
           </div>
 
-          <!-- SECTIONS INTERACTIVES (Affichées uniquement quand la Tier List existe en BDD) -->
+          <!-- SECTIONS INTERACTIVES (Masquées tant que la tier list n'est pas créée) -->
           <div id="tierlist-content-sections" style="display: none;">
             
             <!-- Visibilité & Contrôles globaux -->
@@ -58,8 +58,8 @@
               </div>
 
               <div class="controls" style="margin: 0;">
-                <button id="reset-btn" class="btn btn-warning btn-sm">🔄 Réinitialiser les rangs</button>
-                <button id="delete-btn" class="btn btn-danger btn-sm">🗑️ Supprimer cette tier list</button>
+                <button id="reset-btn" type="button" class="btn btn-warning btn-sm">🔄 Réinitialiser les rangs</button>
+                <button id="delete-btn" type="button" class="btn btn-danger btn-sm">🗑️ Supprimer cette tier list</button>
               </div>
             </div>
 
