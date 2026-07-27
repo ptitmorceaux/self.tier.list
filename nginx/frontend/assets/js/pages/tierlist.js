@@ -392,20 +392,17 @@ class TierlistApp {
     });
   }
 
-  handleDropOnUnclassified(e) {
+  async handleDropOnUnclassified(e) {
     e.preventDefault();
-
     if (!this.draggedElement) return;
 
     const hash = this.draggedElement.dataset.hash;
     const name = this.draggedElement.title || `Image ${hash}`;
 
-    // Retirer de la source (un tier)
     if (this.draggedFrom.source === 'tier') {
       this.removeItemFromTier(this.draggedFrom.tierId, hash);
     }
 
-    // Ajouter aux non classées
     if (!this.unclassifiedImages[hash]) {
       this.unclassifiedImages[hash] = { hash, name };
     }
@@ -415,6 +412,9 @@ class TierlistApp {
 
     this.renderEditorTierlist();
     this.renderUnclassifiedImages();
+
+    // Sauvegarde automatique en BDD !
+    await this.saveTierlist(true);
   }
 
   renderEditorTierlist() {
@@ -527,7 +527,7 @@ class TierlistApp {
     this.renderUnclassifiedImages();
 
     // 4. Sauvegarde automatique en BDD !
-    await this.autoSave();
+    await this.saveTierlist(true);
   }
 
   removeItemFromTier(tierId, hash) {
