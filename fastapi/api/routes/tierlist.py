@@ -149,10 +149,13 @@ async def update_tierlist(
     # 3. Si le JSON 'data' a changé, on re-synchronise les images
     if "data" in updates and updates["data"]:
         new_hashes = _extract_image_hashes(tierlist.data)
-        
+
         # Mettre à jour la table de jonction image_tierlist
         await _sync_image_tierlist(db, tierlist.id, tierlist.data)
-        
+            
+        # 🛠️ AJOUT CRUCIAL : Forcer l'application des suppressions/ajouts avant le nettoyage
+        await db.flush() 
+
         # Supprimer physiquement les images qui ont été retirées de cette tierlist
         removed_hashes = old_hashes - new_hashes
         if removed_hashes:
@@ -222,5 +225,10 @@ async def duplicate_tierlist(
     db.add(duplicated)
     await db.commit()
     await db.refresh(duplicated)
+
+    # 🛠️ AJOUT CRUCIAL : Lier les images existantes à cette nouvelle copie
+    if duplicated.data:
+        await _sync_image_tierlist(db, duplicated.id, duplicated.data)
+        await db.commit()
 
     return {"status": 201, "data": TierlistRead.model_validate(duplicated).model_dump()}

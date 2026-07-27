@@ -36,7 +36,15 @@ class APIClient {
       if (contentType.includes('application/json')) {
         const result = await response.json();
         if (!response.ok) {
-          const message = result.detail || result.message || 'Une erreur est survenue';
+          // 🛠️ AJOUT : Gérer les tableaux d'erreurs de validation FastAPI
+          let message = 'Une erreur est survenue';
+          if (Array.isArray(result.detail)) {
+            message = result.detail.map(e => e.msg).join(', ');
+          } else if (result.detail) {
+            message = result.detail;
+          } else if (result.message) {
+            message = result.message;
+          }
           throw new APIError(message, response.status, result);
         }
         return result;

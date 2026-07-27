@@ -20,26 +20,21 @@ class TierlistApp {
 
   async init() {
     try {
-      if (!Auth.isAuthenticated()) {
+      const isAuth = Auth.isAuthenticated();
+      
+      // Si pas d'ID, on est en mode création : l'authentification est obligatoire.
+      if (!this.tierlistId && !isAuth) {
         window.location.href = 'login.html';
         return;
       }
 
-      const user = Auth.getUser();
-      if (!user || !user.id) {
-        Toast.error("Session utilisateur invalide. Veuillez vous reconnecter.");
-        Auth.logout();
-        return;
-      }
-
-      Navbar.render(true, user);
+      const user = isAuth ? Auth.getUser() : null;
+      Navbar.render(isAuth, user);
       this.setupEventListeners();
 
       if (this.tierlistId && !isNaN(this.tierlistId)) {
-        // Mode consultation / édition d'une tier list existante
         await this.loadTierlist();
       } else {
-        // Mode création d'une nouvelle tier list
         this.createNewTierlist();
       }
     } catch (error) {
