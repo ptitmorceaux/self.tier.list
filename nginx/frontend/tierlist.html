@@ -273,55 +273,87 @@
   <div class="page">
     <div class="container">
       <div class="tierlist-editor">
-        <!-- Mode lecture -->
+
+        <!-- Mode lecture (visiteur) -->
         <div id="viewer-mode" class="viewer-only">
           <div class="tierlist-header">
             <h1 id="viewer-title"></h1>
             <p id="viewer-description" style="color: var(--text-light); font-size: 16px; margin-top: 8px;"></p>
-            <p id="viewer-creator" style="font-size: 13px; color: var(--text-lighter); margin-top: 12px; display: flex; align-items: center; gap: 6px;"><span>📅</span><span></span></p>
+            <p id="viewer-creator" style="font-size: 13px; color: var(--text-lighter); margin-top: 12px; display: flex; align-items: center; gap: 6px;"></p>
           </div>
-
           <div id="viewer-actions" class="controls"></div>
-
           <div id="viewer-tierlist" class="tierlist-container"></div>
         </div>
 
-        <!-- Mode édition -->
+        <!-- Mode édition (propriétaire) -->
         <div id="editor-mode" class="editor-only">
           <div class="tierlist-header">
-            <input type="text" id="title-input" class="tierlist-title-input" placeholder="📝 Titre de votre tier list">
-            <textarea id="description-input" placeholder="✍️ Description de votre tier list (optionnel)" style="margin-top: 10px;"></textarea>
-            <div style="margin-top: 16px; font-size: 14px; color: var(--text-light); font-weight: 500; display: flex; align-items: center; gap: 10px;">
-              <span>👁️ Visibilité:</span> 
-              <select id="privacy-select">
-                <option value="false">🌍 Publique</option>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; flex-wrap: wrap;">
+              <div>
+                <h1 id="editor-title" class="tierlist-title-input" style="margin: 0;"></h1>
+                <p id="editor-description" style="color: var(--text-light); font-size: 15px; margin-top: 6px;"></p>
+              </div>
+              <button id="edit-meta-btn" class="btn btn-secondary btn-sm">✏️ Modifier titre / description</button>
+            </div>
+
+            <div style="margin-top: 20px; font-size: 14px; color: var(--text-light); font-weight: 500; display: flex; align-items: center; gap: 10px;">
+              <span>🔒 Visibilité :</span> 
+              <select id="privacy-select" style="width: auto; padding: 6px 12px;">
+                <option value="false">🌐 Publique</option>
                 <option value="true">🔒 Privée</option>
               </select>
             </div>
           </div>
 
           <div class="controls">
-            <button id="save-btn" class="btn btn-success">💾 Enregistrer les modifications</button>
-            <button id="reset-btn" class="btn btn-warning">🔄 Réinitialiser (tout vers _blank)</button>
+            <button id="reset-btn" class="btn btn-warning">🔄 Réinitialiser (tout vers les images en attente)</button>
             <button id="delete-btn" class="btn btn-danger">🗑️ Supprimer cette tier list</button>
           </div>
 
+          <!-- Zone d'upload d'images -->
           <div class="image-upload" id="image-upload-zone">
             <input type="file" id="image-input" accept="image/*" multiple>
             <div style="pointer-events: none;">
-              <p style="font-size: 32px; margin-bottom: 12px;">📤</p>
+              <p style="font-size: 32px; margin-bottom: 12px;">📁</p>
               <p style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">Glissez-déposez vos images ici</p>
-              <p style="font-size: 13px; color: var(--text-light); margin-top: 8px;">ou cliquez pour sélectionner • PNG, JPG, WebP • Max 5 MB par image</p>
+              <p style="font-size: 13px; color: var(--text-light); margin-top: 8px;">ou cliquez pour sélectionner (PNG, JPG, WebP — Max 5 MB par image)</p>
             </div>
           </div>
 
+          <!-- Grille des rangs (S, A, B...) -->
           <div class="tierlist-container" id="tierlist-editor-container"></div>
 
+          <!-- Section des images non classées -->
           <div class="images-pool" id="unclassified-section">
             <h4>📦 Images en attente de classement</h4>
             <div class="images-grid" id="images-grid"></div>
           </div>
         </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Pop-up Titre / Description -->
+  <div id="meta-modal" class="modal-overlay" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="meta-modal-title">Créer une Tier List</h2>
+        <button class="modal-close" id="meta-modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="modal-title-input">Titre de la Tier List *</label>
+          <input type="text" id="modal-title-input" placeholder="Ex: Les meilleurs jeux vidéo 2026" required>
+        </div>
+        <div class="form-group">
+          <label for="modal-desc-input">Description (optionnelle)</label>
+          <textarea id="modal-desc-input" placeholder="Ajoutez quelques détails sur votre classement..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="meta-modal-cancel">Annuler</button>
+        <button class="btn btn-primary" id="meta-modal-submit">Valider</button>
       </div>
     </div>
   </div>
