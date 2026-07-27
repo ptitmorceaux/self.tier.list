@@ -132,18 +132,34 @@ async def update_tierlist(
         raise HTTPException(status_code=404, detail="Tierlist not found")
 
     user = (await db.execute(select(User).where(User.id == user_jwt["user_id"]))).scalar_one_or_none()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    if tierlist.user_id != user.id and not user.is_admin:
+    if not user or (tierlist.user_id != user.id and not user.is_admin):
         raise HTTPException(status_code=403, detail="Access denied")
 
+    # 1. On mémorise les images présentement associées à la tierlist
+    old_hashes = _extract_image_hashes(tierlist.data) if tierlist.data else set()
+
+    # 2. Mise à jour des champs (nom, description, data JSON, etc.)
     updates = payload.model_dump(exclude_unset=True)
     for key, value in updates.items():
         setattr(tierlist, key, value)
 
     await db.commit()
     await db.refresh(tierlist)
+
+    # 3. Si le JSON 'data' a changé, on re-synchronise les images
+    if "data" in updates and updates["data"]:
+        new_hashes = _extract_image_hashes(tierlist.data)
+        
+        # Mettre à jour la table de jonction image_tierlist
+        await _sync_image_tierlist(db, tierlist.id, tierlist.data)
+        
+        # Supprimer physiquement les images qui ont été retirées de cette tierlist
+        removed_hashes = old_hashes - new_hashes
+        if removed_hashes:
+            await _cleanup_orphaned_images(db, removed_hashes)
+
+        await db.commit()
+
     return {"status": 200, "data": TierlistRead.model_validate(tierlist).model_dump()}
 
 

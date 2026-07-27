@@ -229,19 +229,113 @@ class TierlistApp {
     });
   }
 
+  async removeImageAndSync(hash) {
+    // 1. Retirer l'image de tous les tiers du JSON
+    this.tierlist.data.tiers.forEach(tier => {
+      tier.items = tier.items.filter(item => item.image_hash !== hash);
+    });
+
+    try {
+      Loading.show('Suppression...');
+      
+      // 2. Mettre à jour en BDD -> Le backend supprimera le fichier s'il est devenu orphelin !
+      await api.updateTierlist(
+        this.tierlistId,
+        document.getElementById('title-input').value.trim(),
+        document.getElementById('description-input').value.trim(),
+        this.tierlist.data,
+        document.getElementById('privacy-select').value === 'true'
+      );
+
+      Loading.hide();
+      this.renderEditorTierlist();
+      Toast.info('Image retirée');
+    } catch (error) {
+      Loading.hide();
+      Toast.error(`Erreur lors de la suppression : ${error.message}`);
+    }
+  }
+
+  async uploadAndSyncImage(file) {
+    try {
+      Loading.show(`Upload de ${file.name}...`);
+      
+      // 1. Upload binaire de l'image
+      const response = await api.uploadImage(file);
+      const hash = response.data.hash;
+      const imageName = file.name.replace(/\.[^.]+$/, '');
+
+      // 2. Ajout au tier _blank (id: 0) dans this.tierlist.data
+      const blankTier = this.tierlist.data.tiers.find(t => t.id === 0);
+      if (blankTier) {
+        if (!blankTier.items.some(i => i.image_hash === hash)) {
+          blankTier.items.push({ name: imageName, image_hash: hash });
+        }
+      }
+
+      // 3. Auto-save instantané en BDD via PUT
+      await api.updateTierlist(
+        this.tierlistId,
+        document.getElementById('title-input').value.trim(),
+        document.getElementById('description-input').value.trim(),
+        this.tierlist.data,
+        document.getElementById('privacy-select').value === 'true'
+      );
+
+      Loading.hide();
+      this.renderEditorTierlist();
+      Toast.success(`${file.name} ajoutée et enregistrée`);
+    } catch (error) {
+      Loading.hide();
+      Toast.error(`Erreur upload: ${error.message}`);
+    }
+  }
+
   async handleFileSelect(files) {
-    for (const file of files) {
-      if (!file.type.startsWith('image/')) {
-        Toast.warning(`${file.name} n'est pas une image`);
-        continue;
+    const titleInput = document.getElementById('title-input');
+    const title = titleInput ? titleInput.value.trim() : '';
+
+    // 1. Bloquer si le titre est vide
+    if (!title) {
+      Toast.warning("Veuillez d'abord saisir un titre pour votre tier list.");
+      titleInput?.focus();
+      return;
+    }
+
+    try {
+      // 2. Si la tier list n'a pas encore d'ID (mode création), on la crée en BDD d'abord !
+      if (!this.tierlistId) {
+        Loading.show('Création du brouillon...');
+        const description = document.getElementById('description-input').value.trim();
+        const isPrivate = document.getElementById('privacy-select').value === 'true';
+
+        const res = await api.createTierlist(
+          Auth.getUser().id,
+          title,
+          description,
+          this.tierlist.data,
+          isPrivate
+        );
+
+        this.tierlistId = res.data.id;
+        this.tierlist.id = res.data.id;
+
+        // Met à jour l'URL du navigateur sans recharger la page (?id=X)
+        window.history.replaceState({}, '', `tierlist.html?id=${this.tierlistId}`);
       }
 
-      if (file.size > 5 * 1024 * 1024) {
-        Toast.warning(`${file.name} est trop volumineux (max 5 MB)`);
-        continue;
+      // 3. Upload de chaque fichier et sauvegarde instantanée
+      for (const file of files) {
+        if (!file.type.startsWith('image/')) continue;
+        if (file.size > 5 * 1024 * 1024) {
+          Toast.warning(`${file.name} est trop volumineux (max 5 MB)`);
+          continue;
+        }
+        await this.uploadAndSyncImage(file);
       }
-
-      await this.uploadImage(file);
+    } catch (error) {
+      Loading.hide();
+      Toast.error(`Erreur : ${error.message}`);
     }
   }
 
