@@ -1066,3 +1066,103 @@ textarea {
     padding: 20px;
   }
 }
+
+/* ========================================
+   TIERMAKER STYLE OVERRIDES
+   ======================================== */
+.tierlist-container {
+  display: flex;
+  flex-direction: column; /* Lignes au lieu de colonnes */
+  gap: 4px;
+  background: #1a1a1a; /* Fond sombre typique */
+  padding: 8px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.tier-column { /* Devient en réalité une ligne (tier-row) */
+  display: flex;
+  flex-direction: row;
+  min-height: 80px;
+  background: #2a2a2a;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tier-label {
+  width: 100px;
+  min-width: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  text-align: center;
+  margin: 0;
+  border-radius: 0;
+  min-height: auto;
+}
+
+.tier-label .tier-name {
+  background: transparent;
+  color: inherit;
+  font-weight: 800;
+  font-size: 18px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.tier-items {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 4px;
+  padding: 4px;
+  background: #333; /* Fond de la zone d'items */
+  border: none;
+  min-height: 80px;
+}
+
+/* Nouveaux contrôles à droite */
+.tier-controls {
+  width: 50px;
+  background: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px;
+}
+
+.btn-tier-control {
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 0;
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-tier-control:hover {
+  background: #555;
+}
+
+/* Zone d'attente identique aux rangs */
+.images-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 10px;
+  background: #333;
+  border-radius: 4px;
+  min-height: 100px;
+}
+
+.tier-item, .upload-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: 0;
+  border: 1px solid #111;
+}
