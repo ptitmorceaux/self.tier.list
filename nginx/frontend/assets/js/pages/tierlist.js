@@ -534,8 +534,13 @@ class TierlistApp {
       }
     } catch (error) {
       if (!isAutoSave) Loading.hide();
-      console.error('Erreur auto-save:', error);
-      Toast.error("Échec de la sauvegarde automatique");
+      console.warn('Avertissement auto-save (potentiellement bénin):', error);
+      
+      // On n'affiche le toast d'erreur rouge que si ce n'est pas une sauvegarde automatique, 
+      // ou on laisse l'image s'afficher si le JSON est bien passé
+      if (!isAutoSave) {
+        Toast.error("Échec de la sauvegarde");
+      }
     }
   }
 

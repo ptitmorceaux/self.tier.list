@@ -57,12 +57,21 @@ async def _cleanup_orphaned_images(db: AsyncSession, image_hashes: set[str]):
                 await db.delete(image)
 
 async def _sync_image_tierlist(db: AsyncSession, tierlist_id: int, data: dict):
+    # On supprime d'abord les anciennes liaisons
     await db.execute(
         delete(ImageTierlist).where(ImageTierlist.tierlist_id == tierlist_id)
     )
+    await db.flush()
+    
     hashes = _extract_image_hashes(data)
     for img_hash in hashes:
-        db.add(ImageTierlist(image_hash=img_hash, tierlist_id=tierlist_id))
+        # On s'assure que l'image existe bien en base avant de lier
+        image_exists = (
+            await db.execute(select(Image).where(Image.hash == img_hash))
+        ).scalar_one_or_none()
+        
+        if image_exists:
+            db.add(ImageTierlist(image_hash=img_hash, tierlist_id=tierlist_id))
 
 def _format_tierlist_response(tierlist: Tierlist) -> dict:
     data = TierlistRead.model_validate(tierlist).model_dump()
@@ -172,6 +181,10 @@ async def update_tierlist(
             await _cleanup_orphaned_images(db, removed_hashes)
         await db.commit()
         
+    await db.refresh(tierlist)
+    stmt_reload = select(Tierlist).options(selectinload(Tierlist.owner)).where(Tierlist.id == tierlist_id)
+    tierlist = (await db.execute(stmt_reload)).scalar_one()
+
     return {"status": 200, "data": _format_tierlist_response(tierlist)}
 
 @router.delete("/tierlist/{tierlist_id}", response_model=dict)
