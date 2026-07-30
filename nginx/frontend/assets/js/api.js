@@ -64,7 +64,7 @@ class APIClient {
 
   // Authentification
   async register(username, password) {
-    return this.request('POST', '/auth/register', {
+    return this.request('POST', '/register', {
       username,
       password
     });
