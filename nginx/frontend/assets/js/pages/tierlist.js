@@ -416,39 +416,115 @@ class TierlistApp {
     itemDiv.className = 'tier-item';
     itemDiv.draggable = true;
     itemDiv.dataset.hash = item.image_hash;
+    
+    // On stocke le nom de l'item dans un attribut data pour y accéder facilement
+    itemDiv.dataset.name = item.name || '';
+
     itemDiv.innerHTML = `
       <img src="${api.getImageUrl(item.image_hash)}" alt="${item.name}" title="${item.name}">
-      <button class="remove-btn" data-hash="${item.image_hash}">✖</button>
     `;
-    
+
     itemDiv.addEventListener('dragstart', (e) => this.handleDragStart(e));
-    
-    // NOUVELLE LOGIQUE : On cible cet élément DOM précis
-    itemDiv.querySelector('.remove-btn').addEventListener('click', (e) => {
+
+    // NOUVEAU : Au clic simple (et non au drag), on ouvre la modale de gestion
+    itemDiv.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.removeSpecificImage(itemDiv); 
+      this.openImageModal(item.image_hash, item.name, itemDiv);
     });
-    
+
     return itemDiv;
   }
 
-  async removeSpecificImage(elementNode) {
-    // 1. On détruit uniquement cette case HTML
-    elementNode.remove();
-    
-    // 2. On reconstruit les données JSON en lisant l'écran (les doublons intacts resteront)
-    this.rebuildTiersFromDOM();
-    
-    // 3. On sauvegarde
-    try {
-      Loading.show('Suppression...');
-      await this.saveTierlist(true);
-      Loading.hide();
-      Toast.info('Image retirée');
-    } catch (error) {
-      Loading.hide();
-      Toast.error(`Erreur : ${error.message}`);
-    }
+  openImageModal(imageHash, currentName, itemElementNode) {
+    // Création de la modale personnalisée pour l'image
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal">
+        <div class="modal-header">
+          <h2>Gérer l'image</h2>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body" style="text-align: center;">
+          <img src="${api.getImageUrl(imageHash)}" alt="${currentName}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);">
+          
+          <div class="form-group" style="text-align: left;">
+            <label for="modal-image-name">Nom de l'image</label>
+            <input type="text" id="modal-image-name" class="form-control" value="${currentName}">
+          </div>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: space-between;">
+          <button class="btn btn-danger modal-delete-img">Supprimer l'image</button>
+          <div>
+            <button class="btn btn-secondary modal-cancel" style="margin-right: 8px;">Annuler</button>
+            <button class="btn btn-primary modal-save-img">Enregistrer</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const close = () => {
+      modal.classList.add('closing');
+      setTimeout(() => modal.remove(), 300);
+    };
+
+    modal.querySelector('.modal-close').addEventListener('click', close);
+    modal.querySelector('.modal-cancel').addEventListener('click', close);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) close();
+    });
+
+    // 1. Bouton Enregistrer (Renommer)
+    modal.querySelector('.modal-save-img').addEventListener('click', async () => {
+      const newNameInput = modal.querySelector('#modal-image-name').value.trim();
+      if (!newNameInput) {
+        Toast.error('Le nom ne peut pas être vide');
+        return;
+      }
+
+      // On met à jour le nom dans tous les items du JSON qui ont ce hash
+      this.tierlist.data.tiers.forEach(tier => {
+        tier.items.forEach(item => {
+          if (item.image_hash === imageHash) {
+            item.name = newNameInput;
+          }
+        });
+      });
+
+      try {
+        Loading.show('Mise à jour du nom...');
+        await this.saveTierlist(true);
+        Loading.hide();
+        Toast.success('Nom mis à jour !');
+        
+        // On recharge les vues pour actualiser les infobulles (title)
+        this.renderEditorTierlist();
+        this.renderUnclassifiedImages();
+        close();
+      } catch (error) {
+        Loading.hide();
+        Toast.error('Erreur lors de la mise à jour');
+      }
+    });
+
+    // 2. Bouton Supprimer l'image de la tier list
+    modal.querySelector('.modal-delete-img').addEventListener('click', async () => {
+      close();
+      itemElementNode.remove();
+      this.rebuildTiersFromDOM();
+      
+      try {
+        Loading.show('Suppression...');
+        await this.saveTierlist(true);
+        Loading.hide();
+        Toast.info('Image retirée de la tier list');
+      } catch (error) {
+        Loading.hide();
+        Toast.error('Erreur lors de la suppression');
+      }
+    });
   }
 
   handleDragStart(e) {

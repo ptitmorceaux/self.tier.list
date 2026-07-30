@@ -874,26 +874,6 @@ textarea {
   transform: scale(1.05);
 }
 
-.tier-item .remove-btn, .upload-preview .remove-btn {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  background: var(--danger);
-  color: white;
-  border: none;
-  padding: 6px 8px;
-  font-size: 12px;
-  cursor: pointer;
-  display: none;
-  border-radius: 50%;
-  font-weight: 700;
-  box-shadow: var(--shadow);
-}
-
-.tier-item:hover .remove-btn, .upload-preview:hover .remove-btn {
-  display: block;
-}
-
 /* Zone _blank en attente */
 .images-pool {
   margin-top: 40px;
