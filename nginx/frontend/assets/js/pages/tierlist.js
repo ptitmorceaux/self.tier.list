@@ -52,12 +52,12 @@ class TierlistApp {
       is_private: true,
       data: {
         tiers: [
-          { id: 1, name: 'S', color: '#FF7F7F', items: [] },
-          { id: 2, name: 'A', color: '#FFBF7F', items: [] },
-          { id: 3, name: 'B', color: '#FFDF7F', items: [] },
-          { id: 4, name: 'C', color: '#FFFF7F', items: [] },
-          { id: 5, name: 'D', color: '#BFFF7F', items: [] },
-          { id: 0, name: '_blank', color: '#FFFFFF', items: [] },
+          { id: 1, name: 'S', color: '#FF7F7F', textColor: '#000000', items: [] },
+          { id: 2, name: 'A', color: '#FFBF7F', textColor: '#000000', items: [] },
+          { id: 3, name: 'B', color: '#FFDF7F', textColor: '#000000', items: [] },
+          { id: 4, name: 'C', color: '#FFFF7F', textColor: '#000000', items: [] },
+          { id: 5, name: 'D', color: '#BFFF7F', textColor: '#000000', items: [] },
+          { id: 0, name: '_blank', color: '#FFFFFF', textColor: '#000000', items: [] },
         ],
         order: [1, 2, 3, 4, 5, 0],
       },
@@ -287,25 +287,25 @@ class TierlistApp {
       tierColumn.className = 'tier-column';
       tierColumn.dataset.tierId = tier.id;
 
+      // 1. Label à gauche (Uniquement le nom)
       const tierLabel = document.createElement('div');
       tierLabel.className = 'tier-label';
       tierLabel.style.backgroundColor = tier.color;
-      tierLabel.style.color = this.getContrastColor(tier.color);
+      
+      // Fallback au cas où de vieilles tier lists n'auraient pas textColor
+      const currentTextColor = tier.textColor || this.getContrastColor(tier.color);
+      tierLabel.style.color = currentTextColor;
+
       tierLabel.innerHTML = `
         <input type="text" class="tier-name" value="${tier.name}" data-tier-id="${tier.id}">
-        <input type="color" class="tier-color-picker" value="${tier.color}" data-tier-id="${tier.id}">
       `;
       tierLabel.querySelector('.tier-name').addEventListener('change', (e) => {
         tier.name = e.target.value;
         this.saveTierlist(true);
       });
-      tierLabel.querySelector('.tier-color-picker').addEventListener('change', (e) => {
-        tier.color = e.target.value;
-        tierLabel.style.backgroundColor = e.target.value;
-        this.saveTierlist(true);
-      });
       tierColumn.appendChild(tierLabel);
 
+      // 2. Zone des items au milieu
       const itemsContainer = document.createElement('div');
       itemsContainer.className = 'tier-items';
       itemsContainer.dataset.tierId = tier.id;
@@ -319,15 +319,36 @@ class TierlistApp {
       });
       tierColumn.appendChild(itemsContainer);
 
+      // 3. Boutons et Couleurs à droite
       const tierControls = document.createElement('div');
       tierControls.className = 'tier-controls';
+      // J'élargis un peu manuellement via le style inline pour que les deux couleurs rentrent bien
+      tierControls.style.width = '60px'; 
       tierControls.innerHTML = `
+        <div style="display: flex; gap: 4px; margin-bottom: 2px;">
+          <input type="color" class="tier-bg-color" value="${tier.color}" title="Couleur de fond" style="flex:1; height: 20px; padding: 0; border: none; cursor: pointer; border-radius: 4px;">
+          <input type="color" class="tier-text-color" value="${currentTextColor}" title="Couleur du texte" style="flex:1; height: 20px; padding: 0; border: none; cursor: pointer; border-radius: 4px;">
+        </div>
         <button class="btn-tier-control" title="Monter" onclick="tierlistApp.moveTierUp(${tier.id})">▲</button>
         <button class="btn-tier-control" title="Descendre" onclick="tierlistApp.moveTierDown(${tier.id})">▼</button>
         <button class="btn-tier-control" title="Ajouter au-dessus" onclick="tierlistApp.addTierAt(${tier.id}, 0)">+▲</button>
         <button class="btn-tier-control" title="Ajouter en-dessous" onclick="tierlistApp.addTierAt(${tier.id}, 1)">+▼</button>
         <button class="btn-tier-control" title="Supprimer" style="color:#ff4444" onclick="tierlistApp.deleteTier(${tier.id})">✖</button>
       `;
+
+      // Gestion des changements de couleur
+      tierControls.querySelector('.tier-bg-color').addEventListener('change', (e) => {
+        tier.color = e.target.value;
+        tierLabel.style.backgroundColor = e.target.value;
+        this.saveTierlist(true);
+      });
+      
+      tierControls.querySelector('.tier-text-color').addEventListener('change', (e) => {
+        tier.textColor = e.target.value;
+        tierLabel.style.color = e.target.value;
+        this.saveTierlist(true);
+      });
+
       tierColumn.appendChild(tierControls);
       
       container.appendChild(tierColumn);
@@ -491,7 +512,7 @@ class TierlistApp {
     const index = visibleOrder.indexOf(targetTierId);
     
     const newId = Math.max(...this.tierlist.data.tiers.map(t => t.id), 0) + 1;
-    const newTier = { id: newId, name: 'Nouveau', color: '#CCCCCC', items: [] };
+    const newTier = { id: newId, name: 'Nouveau', color: '#CCCCCC', textColor: '#000000', items: [] };
     
     this.tierlist.data.tiers.push(newTier);
     visibleOrder.splice(index + offset, 0, newId);
@@ -502,6 +523,13 @@ class TierlistApp {
   }
 
   deleteTier(tierId) {
+    // 🛠️ VÉRIFICATION : Il faut laisser au moins 1 rang !
+    const visibleTiers = this.tierlist.data.tiers.filter(t => t.id !== 0);
+    if (visibleTiers.length <= 1) {
+      Toast.warning("Impossible ! Il doit rester au moins une section.");
+      return;
+    }
+
     Modal.confirm('Supprimer', 'Voulez-vous supprimer ce rang ? Les images retourneront dans la zone d\'attente.', async () => {
       const tier = this.tierlist.data.tiers.find(t => t.id === tierId);
       const blankTier = this.tierlist.data.tiers.find(t => t.id === 0);
@@ -575,7 +603,10 @@ class TierlistApp {
       const tierLabel = document.createElement('div');
       tierLabel.className = 'tier-label';
       tierLabel.style.backgroundColor = tier.color;
-      tierLabel.style.color = this.getContrastColor(tier.color);
+      
+      const currentTextColor = tier.textColor || this.getContrastColor(tier.color);
+      tierLabel.style.color = currentTextColor;
+      
       tierLabel.textContent = tier.name;
       tierColumn.appendChild(tierLabel);
 
@@ -654,6 +685,7 @@ class TierlistApp {
     );
   }
 
+  // Conservé par sécurité pour la rétrocompatibilité
   getContrastColor(hexColor) {
     const hex = hexColor.replace('#', '');
     const r = parseInt(hex.substr(0, 2), 16);
