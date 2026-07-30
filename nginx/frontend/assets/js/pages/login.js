@@ -1,8 +1,8 @@
 // login.js
 document.addEventListener('DOMContentLoaded', () => {
-  // Si déjà connecté, rediriger
+  // Si déjà connecté, rediriger vers l'accueil au lieu du profil
   if (Auth.isAuthenticated()) {
-    window.location.href = 'profile.html';
+    window.location.href = 'index.html';
     return;
   }
 
@@ -70,9 +70,12 @@ async function handleLogin(e) {
     Storage.setExpiration(expirationDate);
 
     Toast.success('Connexion réussie !');
+    
+    // NOUVEAU : Redirection vers l'accueil (index.html) au lieu de profile.html
     setTimeout(() => {
-      window.location.href = 'profile.html';
+      window.location.href = 'index.html';
     }, 500);
+
   } catch (error) {
     Loading.hide();
     console.error('Erreur login:', error);
@@ -109,11 +112,13 @@ async function handleRegister(e) {
     Loading.hide();
 
     Toast.success('Inscription réussie ! Connectez-vous maintenant.');
+    
     setTimeout(() => {
       switchToLogin({ preventDefault: () => {} });
       document.getElementById('login-username').value = username;
       document.getElementById('login-password').focus();
     }, 500);
+
   } catch (error) {
     Loading.hide();
     console.error('Erreur register:', error);
