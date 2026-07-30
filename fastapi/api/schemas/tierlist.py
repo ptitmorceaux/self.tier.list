@@ -22,7 +22,7 @@ class TierlistRead(TierlistBase):
     user_id: int
     created_at: datetime
     updated_at: datetime
-
+    user_pseudo: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
 class TierlistUpdate(BaseModel):
