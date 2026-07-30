@@ -751,7 +751,7 @@ textarea {
 .tier-column {
   display: flex;
   flex-direction: row;
-  min-height: 84px;
+  min-height: 114px;
   background: white; /* Fond blanc au lieu du gris foncé */
   border-radius: var(--radius);
   overflow: hidden;
@@ -760,7 +760,7 @@ textarea {
 }
 
 .tier-label {
-  width: 100px;
+  width: 130px;
   min-width: 100px;
   display: flex;
   flex-direction: column;
@@ -803,7 +803,7 @@ textarea {
   padding: 8px;
   background: white; /* Fond blanc */
   border: none;
-  min-height: 80px;
+  min-height: 110px;
 }
 
 /* Boutons de contrôles à droite */
@@ -838,8 +838,8 @@ textarea {
 /* Elements drag & drop (Images) */
 .tier-item, .upload-preview {
   position: relative;
-  width: 70px;
-  height: 70px;
+  width: 100px;
+  height: 100px;
   background: white;
   border-radius: 6px; /* Bords légèrement arrondis pour coller au thème clair */
   overflow: hidden;
