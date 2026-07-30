@@ -955,3 +955,75 @@ textarea {
     padding: 20px;
   }
 }
+
+/* ========================================
+   ZONE D'UPLOAD COMPACTE (A côté de la zone d'attente)
+   ======================================== */
+.pool-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.pool-header h4 {
+  margin: 0 !important;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.image-upload-compact {
+  position: relative;
+  border: 2px dashed var(--primary-light);
+  border-radius: var(--radius);
+  padding: 10px 20px;
+  background: rgba(99, 102, 241, 0.05);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  max-width: 450px; /* Empêche le bouton de devenir trop grand */
+}
+
+.image-upload-compact:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--primary);
+}
+
+.image-upload-compact.dragging {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: var(--primary-dark);
+  transform: scale(1.02);
+}
+
+.image-upload-compact input[type="file"] {
+  display: none;
+}
+
+.image-upload-compact .upload-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-light);
+}
+
+.image-upload-compact .upload-icon {
+  font-size: 24px;
+}
+
+.image-upload-compact .upload-text {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Ajustement pour que l'upload prenne toute la largeur sur mobile */
+@media (max-width: 768px) {
+  .image-upload-compact {
+    max-width: 100%;
+    width: 100%;
+  }
+}

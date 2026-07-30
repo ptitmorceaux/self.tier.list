@@ -50,35 +50,36 @@
             <!-- Visibilité & Contrôles globaux -->
             <div class="card mb-20" style="padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; background: var(--light);">
               <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600;">
-                <span>🔒 Visibilité :</span>
+                <span>👁️ Visibilité :</span>
                 <select id="privacy-select" style="width: auto; padding: 6px 12px;">
-                  <option value="false">🌐 Publique</option>
+                  <option value="false">🌍 Publique</option>
                   <option value="true">🔒 Privée</option>
                 </select>
               </div>
-
               <div class="controls" style="margin: 0;">
                 <button id="reset-btn" type="button" class="btn btn-warning btn-sm">🔄 Réinitialiser les rangs</button>
                 <button id="delete-btn" type="button" class="btn btn-danger btn-sm">🗑️ Supprimer cette tier list</button>
               </div>
             </div>
 
-            <!-- Zone d'upload d'images -->
-            <div class="image-upload mb-30" id="image-upload-zone">
-              <input type="file" id="image-input" accept="image/*" multiple>
-              <div style="pointer-events: none;">
-                <p style="font-size: 32px; margin-bottom: 8px;">📁</p>
-                <p style="font-weight: 600; font-size: 16px; margin-bottom: 4px;">Glissez-déposez vos images ici</p>
-                <p style="font-size: 13px; color: var(--text-light);">ou cliquez pour sélectionner (PNG, JPG, WebP — Max 5 MB)</p>
-              </div>
-            </div>
-
-            <!-- Grille des rangs (S, A, B...) -->
+            <!-- 1. Grille des rangs (Elle remonte ici !) -->
             <div class="tierlist-container mb-30" id="tierlist-editor-container"></div>
 
-            <!-- Images en attente (_blank) -->
+            <!-- 2. Images en attente + Zone d'upload compacte -->
             <div class="images-pool" id="unclassified-section">
-              <h4>📦 Images en attente de classement</h4>
+              <div class="pool-header">
+                <h4>📦 Images en attente de classement</h4>
+                
+                <!-- Zone d'upload repensée -->
+                <div class="image-upload-compact" id="image-upload-zone">
+                  <input type="file" id="image-input" accept="image/*" multiple>
+                  <div class="upload-content" style="pointer-events: none;">
+                    <span class="upload-icon">📁</span>
+                    <span class="upload-text">Ajouter des images (Glisser-déposer ou cliquer)</span>
+                  </div>
+                </div>
+              </div>
+              
               <div class="images-grid" id="images-grid"></div>
             </div>
 
