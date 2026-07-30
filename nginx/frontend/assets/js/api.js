@@ -82,11 +82,10 @@ class APIClient {
     return this.request('GET', '/user/me');
   }
 
-  async updateUser(password, newUsername = null, newPseudo = null, newPassword = null) {
+  async updateUser(password, newUsername = null, newPassword = null) {
     return this.request('PUT', '/user/me', {
       password,
       new_username: newUsername,
-      new_pseudo: newPseudo,
       new_password: newPassword,
     });
   }

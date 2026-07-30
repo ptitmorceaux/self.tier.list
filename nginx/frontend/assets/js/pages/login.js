@@ -125,7 +125,7 @@ async function handleRegister(e) {
     let message = error.message;
     if (error.response?.detail) {
       if (error.response.detail.includes('already exists')) {
-        message = 'Ce nom d\'utilisateur ou pseudo existe déjà';
+        message = 'Ce nom d\'utilisateur existe déjà';
       }
     }
     Toast.error(message || 'Erreur lors de l\'inscription');

@@ -88,7 +88,7 @@ class Navbar {
 
     if (isAuthenticated && user) {
       html += `
-        <span class="navbar-user">Bienvenue, <strong>${user.pseudo}</strong></span>
+        <span class="navbar-user">Bienvenue, <strong>${user.username}</strong></span>
         <a href="tierlist.html" class="btn btn-primary btn-sm">+ Nouvelle Tier List</a>
         <a href="profile.html" class="btn btn-secondary btn-sm">Profil</a>
         <a href="settings.html" class="btn btn-secondary btn-sm">Paramètres</a>
@@ -137,6 +137,5 @@ class Loading {
 const Validation = {
   isValidUsername: (username) => /^[a-zA-Z0-9_]{3,}$/.test(username),
   isValidPassword: (password) => password.length >= 3,
-  isValidPseudo: (pseudo) => pseudo.length >= 1,
   isValidEmail: (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
 };

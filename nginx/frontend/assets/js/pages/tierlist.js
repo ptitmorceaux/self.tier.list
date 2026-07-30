@@ -615,7 +615,7 @@ class TierlistApp {
     document.getElementById('viewer-description').textContent = this.tierlist.description || 'Pas de description';
     
     // Affichage propre de l'auteur et de la date
-    const author = this.tierlist.user_pseudo || 'Inconnu';
+    const author = this.tierlist.username || 'Inconnu';
     const dateCrea = new Date(this.tierlist.created_at).toLocaleDateString('fr-FR');
     document.getElementById('viewer-creator').textContent = `Créée par ${author} le ${dateCrea}`;
 
