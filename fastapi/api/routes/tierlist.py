@@ -67,9 +67,9 @@ async def _sync_image_tierlist(db: AsyncSession, tierlist_id: int, data: dict):
 def _format_tierlist_response(tierlist: Tierlist) -> dict:
     data = TierlistRead.model_validate(tierlist).model_dump()
     if hasattr(tierlist, "owner") and tierlist.owner:
-        data["user_pseudo"] = tierlist.owner.pseudo
+        data["username"] = tierlist.owner.username
     else:
-        data["user_pseudo"] = "Inconnu"
+        data["username"] = "Inconnu"
     return data
 
 @router.post("/tierlist", response_model=dict, status_code=201)

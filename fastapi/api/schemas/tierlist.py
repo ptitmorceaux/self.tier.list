@@ -1,12 +1,9 @@
 from datetime import datetime
 from typing import Annotated, Any, Optional
-
 from pydantic import BaseModel, ConfigDict, StringConstraints
-
 
 NameStr = Annotated[str, StringConstraints(min_length=1, strip_whitespace=True)]
 DescriptionStr = Annotated[str, StringConstraints(strip_whitespace=True)]
-
 
 class TierlistBase(BaseModel):
     name: NameStr
@@ -22,7 +19,7 @@ class TierlistRead(TierlistBase):
     user_id: int
     created_at: datetime
     updated_at: datetime
-    user_pseudo: Optional[str] = None
+    username: Optional[str] = None # Remplacement ici
     model_config = ConfigDict(from_attributes=True)
 
 class TierlistUpdate(BaseModel):
