@@ -292,7 +292,6 @@ class TierlistApp {
       tierLabel.className = 'tier-label';
       tierLabel.style.backgroundColor = tier.color;
       
-      // Fallback au cas où de vieilles tier lists n'auraient pas textColor
       const currentTextColor = tier.textColor || this.getContrastColor(tier.color);
       tierLabel.style.color = currentTextColor;
 
@@ -322,18 +321,27 @@ class TierlistApp {
       // 3. Boutons et Couleurs à droite
       const tierControls = document.createElement('div');
       tierControls.className = 'tier-controls';
-      // J'élargis un peu manuellement via le style inline pour que les deux couleurs rentrent bien
-      tierControls.style.width = '60px'; 
+      // On élargit à 80px pour faire tenir 2 boutons côte à côte
+      tierControls.style.width = '80px'; 
+      
+      // On regroupe les boutons avec des div en display: flex
       tierControls.innerHTML = `
         <div style="display: flex; gap: 4px; margin-bottom: 2px;">
           <input type="color" class="tier-bg-color" value="${tier.color}" title="Couleur de fond" style="flex:1; height: 20px; padding: 0; border: none; cursor: pointer; border-radius: 4px;">
           <input type="color" class="tier-text-color" value="${currentTextColor}" title="Couleur du texte" style="flex:1; height: 20px; padding: 0; border: none; cursor: pointer; border-radius: 4px;">
         </div>
-        <button class="btn-tier-control" title="Monter" onclick="tierlistApp.moveTierUp(${tier.id})">▲</button>
-        <button class="btn-tier-control" title="Descendre" onclick="tierlistApp.moveTierDown(${tier.id})">▼</button>
-        <button class="btn-tier-control" title="Ajouter au-dessus" onclick="tierlistApp.addTierAt(${tier.id}, 0)">+▲</button>
-        <button class="btn-tier-control" title="Ajouter en-dessous" onclick="tierlistApp.addTierAt(${tier.id}, 1)">+▼</button>
-        <button class="btn-tier-control" title="Supprimer" style="color:#ff4444" onclick="tierlistApp.deleteTier(${tier.id})">✖</button>
+        
+        <div style="display: flex; gap: 4px;">
+          <button class="btn-tier-control" style="flex: 1;" title="Monter" onclick="tierlistApp.moveTierUp(${tier.id})">▲</button>
+          <button class="btn-tier-control" style="flex: 1;" title="Descendre" onclick="tierlistApp.moveTierDown(${tier.id})">▼</button>
+        </div>
+        
+        <div style="display: flex; gap: 4px;">
+          <button class="btn-tier-control" style="flex: 1;" title="Ajouter au-dessus" onclick="tierlistApp.addTierAt(${tier.id}, 0)">+▲</button>
+          <button class="btn-tier-control" style="flex: 1;" title="Ajouter en-dessous" onclick="tierlistApp.addTierAt(${tier.id}, 1)">+▼</button>
+        </div>
+        
+        <button class="btn-tier-control" title="Supprimer" style="width: 100%; color:#ff4444;" onclick="tierlistApp.deleteTier(${tier.id})">✖</button>
       `;
 
       // Gestion des changements de couleur
