@@ -613,18 +613,32 @@ class TierlistApp {
 
     document.getElementById('viewer-title').textContent = this.tierlist.name;
     document.getElementById('viewer-description').textContent = this.tierlist.description || 'Pas de description';
-    document.getElementById('viewer-creator').textContent = `Créée par ${this.tierlist.user_pseudo || 'Inconnu'} le ${new Date(this.tierlist.created_at).toLocaleDateString('fr-FR')}`;
+    
+    // Affichage propre de l'auteur et de la date
+    const author = this.tierlist.user_pseudo || 'Inconnu';
+    const dateCrea = new Date(this.tierlist.created_at).toLocaleDateString('fr-FR');
+    document.getElementById('viewer-creator').textContent = `Créée par ${author} le ${dateCrea}`;
 
     const actionsContainer = document.getElementById('viewer-actions');
     actionsContainer.innerHTML = '';
     
+    // NOUVEAU : On crée le bouton dans TOUS LES CAS
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'btn btn-primary';
+    
     if (Auth.isAuthenticated()) {
-      const copyBtn = document.createElement('button');
-      copyBtn.className = 'btn btn-primary';
+      // Si connecté : on lance la duplication
       copyBtn.textContent = '📋 Copier cette tier list';
       copyBtn.addEventListener('click', () => this.copyTierlist());
-      actionsContainer.appendChild(copyBtn);
+    } else {
+      // Si visiteur : on redirige vers la connexion
+      copyBtn.textContent = '📋 Copier (Se connecter)';
+      copyBtn.addEventListener('click', () => {
+        window.location.href = 'login.html';
+      });
     }
+    
+    actionsContainer.appendChild(copyBtn);
 
     this.renderViewerTierlist();
   }

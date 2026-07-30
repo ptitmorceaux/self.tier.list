@@ -3,7 +3,7 @@ let allPublicTierlists = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   const isAuth = Auth.isAuthenticated();
-  const user = Auth.getUser();
+  const user = isAuth ? Auth.getUser() : null; // Ne plante pas si pas connecté
   Navbar.render(isAuth, user);
 
   document.getElementById('search-input')?.addEventListener('input', applyFilters);
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('filter-date')?.addEventListener('change', applyFilters);
   document.getElementById('filter-author')?.addEventListener('input', applyFilters);
 
-  await loadTierlists();
+  await loadTierlists(); // Lance le chargement pour tout le monde !
 });
 
 function normalizeString(str) {
@@ -54,22 +54,8 @@ function applyFilters() {
 
 async function loadTierlists() {
   try {
-    if (!Auth.isAuthenticated()) {
-      document.getElementById('tierlists-container').innerHTML = '';
-      document.getElementById('empty-state').innerHTML = `
-        <div style="padding: 60px 20px;">
-          <p style="font-size: 18px; margin-bottom: 20px;">Connectez-vous pour voir et créer des tier lists !</p>
-          <a href="login.html" class="btn btn-primary" style="display: inline-block;">Se connecter</a>
-        </div>
-      `;
-      document.getElementById('empty-state').style.display = 'block';
-      document.getElementById('search-input').parentElement.style.display = 'none';
-      document.getElementById('filters-container').style.display = 'none';
-      return;
-    }
-
     Loading.show('Chargement des tier lists...');
-    const response = await api.getTierlists();
+    const response = await api.getTierlists(); // Fonctionnera même sans Token !
     Loading.hide();
 
     const tierlists = response.data || [];
@@ -96,8 +82,9 @@ function renderTierlists(listsToRender, isSearchActive) {
       emptyState.innerHTML = `<p style="font-size: 16px; margin-bottom: 20px;">Aucun résultat trouvé pour ces filtres.</p>`;
     } else {
       emptyState.innerHTML = `
-        <p style="font-size: 16px; margin-bottom: 20px;">Aucune tier list publique pour le moment.</p>
-        <a href="profile.html" class="btn btn-primary" style="display: inline-block;">Créer la vôtre</a>
+        <div style="margin-bottom: 20px; font-size: 48px;">🎯</div>
+        <p style="font-size: 18px; margin-bottom: 20px; font-weight: 600;">Aucune tier list publique pour le moment.</p>
+        ${!Auth.isAuthenticated() ? '<a href="login.html" class="btn btn-primary" style="display: inline-block;">Se connecter pour en créer une</a>' : ''}
       `;
     }
     return;

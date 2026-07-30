@@ -1,12 +1,12 @@
 import os
 from copy import deepcopy
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import delete, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from core.jwt import jwt_required
+from core.jwt import jwt_required, verify_jwt
 from db.session import get_db
 from models.image import Image
 from models.image_tierlist import ImageTierlist
@@ -86,17 +86,33 @@ async def create_tierlist(payload: TierlistCreate, user_jwt=Depends(jwt_required
     db.add(tierlist)
     await db.commit()
     
-    # On recharge la tier list avec son propriétaire
     stmt = select(Tierlist).options(selectinload(Tierlist.owner)).where(Tierlist.id == tierlist.id)
     tierlist_with_owner = (await db.execute(stmt)).scalar_one()
 
     return {"status": 201, "data": _format_tierlist_response(tierlist_with_owner)}
 
 @router.get("/tierlist", response_model=dict)
-async def list_tierlists(user_jwt=Depends(jwt_required), db: AsyncSession = Depends(get_db)):
-    stmt = select(Tierlist).options(selectinload(Tierlist.owner)).where(
-        or_(Tierlist.user_id == user_jwt["user_id"], Tierlist.is_private.is_(False))
-    )
+async def list_tierlists(request: Request, db: AsyncSession = Depends(get_db)): # 👈 Authentification optionnelle
+    # On vérifie manuellement si un token valide a été fourni
+    auth = request.headers.get("Authorization")
+    user_id = None
+    if auth and auth.startswith("Bearer "):
+        token = auth.split(" ")[1]
+        payload = verify_jwt(token)
+        if payload:
+            user_id = int(payload["sub"])
+
+    # Si l'utilisateur est connecté, il voit le public + son privé
+    if user_id:
+        stmt = select(Tierlist).options(selectinload(Tierlist.owner)).where(
+            or_(Tierlist.user_id == user_id, Tierlist.is_private.is_(False))
+        )
+    # S'il n'est pas connecté (visiteur), il ne voit QUE le public
+    else:
+        stmt = select(Tierlist).options(selectinload(Tierlist.owner)).where(
+            Tierlist.is_private.is_(False)
+        )
+
     rows = (await db.execute(stmt)).scalars().all()
     return {
         "status": 200,
@@ -104,13 +120,25 @@ async def list_tierlists(user_jwt=Depends(jwt_required), db: AsyncSession = Depe
     }
 
 @router.get("/tierlist/{tierlist_id}", response_model=dict)
-async def get_tierlist(tierlist_id: int, user_jwt=Depends(jwt_required), db: AsyncSession = Depends(get_db)):
+async def get_tierlist(tierlist_id: int, request: Request, db: AsyncSession = Depends(get_db)): # 👈 Authentification optionnelle
     stmt = select(Tierlist).options(selectinload(Tierlist.owner)).where(Tierlist.id == tierlist_id)
     tierlist = (await db.execute(stmt)).scalar_one_or_none()
     if not tierlist:
         raise HTTPException(status_code=404, detail="Tierlist not found")
-    if tierlist.is_private and tierlist.user_id != user_jwt["user_id"]:
+    
+    # On récupère le user_id de la même manière pour le contrôle d'accès
+    auth = request.headers.get("Authorization")
+    user_id = None
+    if auth and auth.startswith("Bearer "):
+        token = auth.split(" ")[1]
+        payload = verify_jwt(token)
+        if payload:
+            user_id = int(payload["sub"])
+
+    # On bloque si la tierlist est privée et que ce n'est pas le proprio
+    if tierlist.is_private and tierlist.user_id != user_id:
         raise HTTPException(status_code=403, detail="Access denied")
+        
     return {"status": 200, "data": _format_tierlist_response(tierlist)}
 
 @router.put("/tierlist/{tierlist_id}", response_model=dict)
