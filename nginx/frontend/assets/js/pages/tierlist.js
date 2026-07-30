@@ -287,7 +287,7 @@ class TierlistApp {
       tierColumn.className = 'tier-column';
       tierColumn.dataset.tierId = tier.id;
 
-      // 1. Label à gauche (Uniquement le nom)
+      // 1. Label à gauche (Nom de la section)
       const tierLabel = document.createElement('div');
       tierLabel.className = 'tier-label';
       tierLabel.style.backgroundColor = tier.color;
@@ -295,13 +295,43 @@ class TierlistApp {
       const currentTextColor = tier.textColor || this.getContrastColor(tier.color);
       tierLabel.style.color = currentTextColor;
 
+      // On utilise un DIV éditable au lieu d'un input !
       tierLabel.innerHTML = `
-        <input type="text" class="tier-name" value="${tier.name}" data-tier-id="${tier.id}">
+        <div contenteditable="true" class="tier-name" data-tier-id="${tier.id}" spellcheck="false">${tier.name}</div>
       `;
-      tierLabel.querySelector('.tier-name').addEventListener('change', (e) => {
-        tier.name = e.target.value;
+      
+      const nameEl = tierLabel.querySelector('.tier-name');
+      
+      // Auto-save à la perte du focus (quand on clique ailleurs)
+      nameEl.addEventListener('blur', (e) => {
+        tier.name = e.target.innerText.trim();
         this.saveTierlist(true);
       });
+
+      // Valider avec la touche "Entrée" (pour éviter de sauter 15 lignes par accident)
+      nameEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          nameEl.blur(); // Retire le curseur et déclenche la sauvegarde
+        }
+      });
+
+      // Fonction magique : Réduit la taille du texte s'il est trop long
+      const adjustSize = () => {
+        nameEl.style.fontSize = '18px'; // On remet à la taille max
+        let size = 18;
+        // Tant que le texte déborde de la case (ex: > 90px de haut), on rétrécit la police
+        while (nameEl.scrollHeight > 90 && size > 10) {
+          size--;
+          nameEl.style.fontSize = size + 'px';
+        }
+      };
+      
+      // Applique le rétrécissement dès qu'on tape au clavier
+      nameEl.addEventListener('input', adjustSize);
+      // Applique le rétrécissement au chargement initial de la page
+      setTimeout(adjustSize, 0); 
+
       tierColumn.appendChild(tierLabel);
 
       // 2. Zone des items au milieu
@@ -615,9 +645,25 @@ class TierlistApp {
       const currentTextColor = tier.textColor || this.getContrastColor(tier.color);
       tierLabel.style.color = currentTextColor;
       
-      tierLabel.textContent = tier.name;
+      // Ici pas de contenteditable="true" car le visiteur ne peut pas éditer
+      tierLabel.innerHTML = `<div class="tier-name">${tier.name}</div>`;
+      
+      // Auto-réduction de la taille du texte au chargement
+      setTimeout(() => {
+        const nameEl = tierLabel.querySelector('.tier-name');
+        if (nameEl) {
+          nameEl.style.fontSize = '18px';
+          let size = 18;
+          while (nameEl.scrollHeight > 90 && size > 10) {
+            size--;
+            nameEl.style.fontSize = size + 'px';
+          }
+        }
+      }, 0);
+
       tierColumn.appendChild(tierLabel);
 
+      // 🛠️ LA PARTIE MANQUANTE : On remet les images dans les rangs pour les visiteurs !
       const itemsContainer = document.createElement('div');
       itemsContainer.className = 'tier-items';
       
@@ -629,6 +675,8 @@ class TierlistApp {
       });
       
       tierColumn.appendChild(itemsContainer);
+      // --------------------------------------------------------------------------
+
       container.appendChild(tierColumn);
     });
 

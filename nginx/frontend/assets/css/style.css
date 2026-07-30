@@ -761,12 +761,12 @@ textarea {
 
 .tier-label {
   width: 130px;
-  min-width: 100px;
+  min-width: 130px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4px;
+  padding: 8px;
   text-align: center;
   margin: 0;
   border-radius: 0;
@@ -778,11 +778,17 @@ textarea {
   background: transparent;
   color: inherit;
   font-weight: 800;
-  font-size: 18px;
+  font-size: 18px; /* Taille par défaut max */
   text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
   width: 100%;
   text-align: center;
   border: none;
+  outline: none; /* Enlève l'horrible bordure bleue quand on clique */
+  word-wrap: break-word; /* Autorise le retour à la ligne */
+  overflow-wrap: break-word;
+  cursor: text;
+  max-height: 96px; /* Limite de hauteur avant que le texte ne se cache */
+  overflow: hidden;
 }
 
 .tier-color-picker {
