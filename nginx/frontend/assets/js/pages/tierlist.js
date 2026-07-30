@@ -613,7 +613,7 @@ class TierlistApp {
 
     document.getElementById('viewer-title').textContent = this.tierlist.name;
     document.getElementById('viewer-description').textContent = this.tierlist.description || 'Pas de description';
-    document.getElementById('viewer-creator').textContent = `Créée le ${new Date(this.tierlist.created_at).toLocaleDateString('fr-FR')}`;
+    document.getElementById('viewer-creator').textContent = `Créée par ${this.tierlist.user_pseudo || 'Inconnu'} le ${new Date(this.tierlist.created_at).toLocaleDateString('fr-FR')}`;
 
     const actionsContainer = document.getElementById('viewer-actions');
     actionsContainer.innerHTML = '';

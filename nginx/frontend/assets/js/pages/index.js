@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const user = Auth.getUser();
   Navbar.render(isAuth, user);
 
-  // Écouteurs pour la recherche ET les filtres
   document.getElementById('search-input')?.addEventListener('input', applyFilters);
   document.getElementById('sort-date')?.addEventListener('change', applyFilters);
   document.getElementById('filter-date')?.addEventListener('change', applyFilters);
@@ -20,24 +19,22 @@ function normalizeString(str) {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
-// Fonction globale qui cumule tous les filtres
 function applyFilters() {
   const searchTerm = normalizeString(document.getElementById('search-input')?.value || '');
   const filterAuthor = normalizeString(document.getElementById('filter-author')?.value || '');
-  const filterDate = document.getElementById('filter-date')?.value || ''; // Format: YYYY-MM-DD
+  const filterDate = document.getElementById('filter-date')?.value || ''; 
   const sortOrder = document.getElementById('sort-date')?.value || 'desc';
 
   let filtered = allPublicTierlists.filter(t => {
     const name = normalizeString(t.name);
     const desc = normalizeString(t.description);
-    const authorText = normalizeString(`utilisateur #${t.user_id}`); // Basé sur l'ID pour l'instant
+    const authorText = normalizeString(t.user_pseudo || ''); 
     
     const matchSearch = name.includes(searchTerm) || desc.includes(searchTerm);
     const matchAuthor = filterAuthor === '' || authorText.includes(filterAuthor);
     
     let matchDate = true;
     if (filterDate !== '') {
-      // Extrait juste le 'YYYY-MM-DD' de la date ISO du serveur
       const tDate = t.created_at.substring(0, 10);
       matchDate = tDate === filterDate;
     }
@@ -45,7 +42,6 @@ function applyFilters() {
     return matchSearch && matchAuthor && matchDate;
   });
 
-  // Tri par date de mise à jour (ou création si absent)
   filtered.sort((a, b) => {
     const dateA = new Date(a.updated_at || a.created_at).getTime();
     const dateB = new Date(b.updated_at || b.created_at).getTime();
@@ -79,7 +75,7 @@ async function loadTierlists() {
     const tierlists = response.data || [];
     allPublicTierlists = tierlists.filter(t => !t.is_private);
     
-    applyFilters(); // Lance le rendu avec les filtres par défaut (tri décroissant)
+    applyFilters();
 
   } catch (error) {
     Loading.hide();
@@ -121,9 +117,8 @@ function renderTierlists(listsToRender, isSearchActive) {
 }
 
 function createTierlistCard(tierlist) {
-  const user = tierlist.user_id ? `Créée par l'utilisateur #${tierlist.user_id}` : 'Utilisateur inconnu';
+  const user = tierlist.user_pseudo ? tierlist.user_pseudo : 'Utilisateur inconnu';
   
-  // Formatage des deux dates
   const dateCrea = new Date(tierlist.created_at).toLocaleDateString('fr-FR');
   const dateModif = tierlist.updated_at ? new Date(tierlist.updated_at).toLocaleDateString('fr-FR') : dateCrea;
 
@@ -132,7 +127,7 @@ function createTierlistCard(tierlist) {
       <div class="card-header">
         <div>
           <h3 class="card-title">${tierlist.name}</h3>
-          <p style="color: var(--text-light); font-size: 12px; margin-top: 5px;">
+          <p style="color: var(--text-light); font-size: 12px; margin-top: 5px; line-height: 1.4;">
             👤 ${user}<br>
             📅 Créée le ${dateCrea} • ✏️ Modifiée le ${dateModif}
           </p>
