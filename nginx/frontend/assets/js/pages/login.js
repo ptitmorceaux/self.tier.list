@@ -86,12 +86,11 @@ async function handleLogin(e) {
 async function handleRegister(e) {
   e.preventDefault();
 
-  const pseudo = document.getElementById('register-pseudo').value.trim();
   const username = document.getElementById('register-username').value.trim();
   const password = document.getElementById('register-password').value;
 
   // Validation
-  if (!pseudo || !username || !password) {
+  if (!username || !password) {
     Toast.error('Veuillez remplir tous les champs');
     return;
   }
@@ -108,7 +107,7 @@ async function handleRegister(e) {
 
   try {
     Loading.show('Inscription en cours...');
-    await api.register(pseudo, username, password);
+    await api.register(username, password);
     Loading.hide();
 
     Toast.success('Inscription réussie ! Connectez-vous maintenant.');

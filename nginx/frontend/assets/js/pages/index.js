@@ -28,7 +28,7 @@ function applyFilters() {
   let filtered = allPublicTierlists.filter(t => {
     const name = normalizeString(t.name);
     const desc = normalizeString(t.description);
-    const authorText = normalizeString(t.user_pseudo || ''); 
+    const authorText = normalizeString(t.username || ''); 
     
     const matchSearch = name.includes(searchTerm) || desc.includes(searchTerm);
     const matchAuthor = filterAuthor === '' || authorText.includes(filterAuthor);
@@ -104,10 +104,16 @@ function renderTierlists(listsToRender, isSearchActive) {
 }
 
 function createTierlistCard(tierlist) {
-  const user = tierlist.user_pseudo ? tierlist.user_pseudo : 'Utilisateur inconnu';
-  
+  const authorName = tierlist.username ? tierlist.username : 'Utilisateur inconnu';
   const dateCrea = new Date(tierlist.created_at).toLocaleDateString('fr-FR');
   const dateModif = tierlist.updated_at ? new Date(tierlist.updated_at).toLocaleDateString('fr-FR') : dateCrea;
+
+  const currentUser = Auth.getUser();
+  const isOwner = currentUser && currentUser.id === tierlist.user_id;
+  
+  // On change le texte et la couleur du bouton en fonction
+  const btnText = isOwner ? '✏️ Éditer' : '👁️ Voir';
+  const btnClass = isOwner ? 'btn-secondary' : 'btn-primary'; 
 
   return `
     <div class="card" data-tierlist-id="${tierlist.id}">
@@ -115,7 +121,7 @@ function createTierlistCard(tierlist) {
         <div>
           <h3 class="card-title">${tierlist.name}</h3>
           <p style="color: var(--text-light); font-size: 12px; margin-top: 5px; line-height: 1.4;">
-            👤 ${user}<br>
+            👤 ${authorName}<br>
             📅 Créée le ${dateCrea} • ✏️ Modifiée le ${dateModif}
           </p>
         </div>
@@ -124,7 +130,7 @@ function createTierlistCard(tierlist) {
         <p>${tierlist.description || 'Pas de description'}</p>
       </div>
       <div class="card-footer">
-        <button class="btn btn-view btn-primary">Voir</button>
+        <button class="btn btn-view ${btnClass}">${btnText}</button>
       </div>
     </div>
   `;
