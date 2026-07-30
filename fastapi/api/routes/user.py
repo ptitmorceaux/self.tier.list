@@ -8,6 +8,10 @@ from db.session import get_db
 from models.user import User
 from schemas.user import UserCreate, UserDelete, UserLogin, UserRead, UserUpdate
 
+from sqlalchemy.orm import selectinload
+from models.tierlist import Tierlist
+from routes.tierlist import _extract_image_hashes, _cleanup_orphaned_images
+
 router = APIRouter(tags=["Users"])
 
 def _hash_password(password: str) -> str:
@@ -102,11 +106,27 @@ async def delete_user(payload: UserDelete, user_jwt=Depends(jwt_required), db: A
         
     if user.password != _hash_password(payload.password):
         raise HTTPException(status_code=401, detail="Invalid password")
-        
+
+    # 1. On récupère toutes les tier lists de l'utilisateur avant de le supprimer
+    tierlists_stmt = select(Tierlist).where(Tierlist.user_id == user.id)
+    user_tierlists = (await db.execute(tierlists_stmt)).scalars().all()
+    
+    # 2. On extrait tous les hashes d'images utilisés par ses tier lists
+    user_image_hashes = set()
+    for tl in user_tierlists:
+        if tl.data:
+            user_image_hashes.update(_extract_image_hashes(tl.data))
+
+    # 3. On supprime l'utilisateur (ce qui supprime ses tier lists et les lignes de liaison image_tierlist en cascade)
     await db.delete(user)
     await db.commit()
-    
+
+    # 4. On nettoie les images qui étaient propres à cet utilisateur (si plus aucune autre tier list sur le site ne les utilise)
+    if user_image_hashes:
+        await _cleanup_orphaned_images(db, user_image_hashes)
+        await db.commit()
+
     return {
         "status": 200,
-        "message": "User deleted successfully",
+        "message": "User and associated data deleted successfully",
     }
