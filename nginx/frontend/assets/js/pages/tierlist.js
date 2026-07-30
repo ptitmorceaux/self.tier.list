@@ -416,8 +416,6 @@ class TierlistApp {
     itemDiv.className = 'tier-item';
     itemDiv.draggable = true;
     itemDiv.dataset.hash = item.image_hash;
-    
-    // On stocke le nom de l'item dans un attribut data pour y accéder facilement
     itemDiv.dataset.name = item.name || '';
 
     itemDiv.innerHTML = `
@@ -426,7 +424,11 @@ class TierlistApp {
 
     itemDiv.addEventListener('dragstart', (e) => this.handleDragStart(e));
 
-    // NOUVEAU : Au clic simple (et non au drag), on ouvre la modale de gestion
+    itemDiv.addEventListener('dragend', () => {
+      itemDiv.classList.remove('dragging');
+      this.draggedElement = null;
+    });
+
     itemDiv.addEventListener('click', (e) => {
       e.stopPropagation();
       this.openImageModal(item.image_hash, item.name, itemDiv);
