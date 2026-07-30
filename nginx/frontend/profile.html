@@ -11,18 +11,30 @@
 
   <div class="page">
     <div class="container">
-      <!-- L'en-tête mis à jour avec la barre de recherche -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; margin-top: 30px; flex-wrap: wrap; gap: 15px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; margin-top: 30px; flex-wrap: wrap; gap: 15px;">
         <div>
           <h1 style="font-size: 32px; font-weight: 800; margin-bottom: 8px;">📚 Mes Tier Lists</h1>
           <p style="color: var(--text-light);">Gérez et partagez vos créations</p>
         </div>
-        
         <div style="flex: 1; max-width: 400px; min-width: 250px;">
           <input type="text" id="search-input" class="form-control" placeholder="🔍 Rechercher dans mes tier lists..." style="width: 100%;">
         </div>
-
         <button id="new-tierlist-btn" class="btn btn-primary">+ Nouvelle Tier List</button>
+      </div>
+
+      <!-- Barre de filtres et tris -->
+      <div id="filters-container" style="display: flex; gap: 15px; margin-bottom: 40px; flex-wrap: wrap; background: white; padding: 15px; border-radius: var(--radius); border: 1px solid var(--border);">
+        <div style="flex: 1; min-width: 200px;">
+          <label style="font-size: 12px; margin-bottom: 4px; font-weight: 600;">Trier par :</label>
+          <select id="sort-date" class="form-control" style="padding: 8px;">
+            <option value="desc">Dernière modification</option>
+            <option value="asc">Ancienne modification</option>
+          </select>
+        </div>
+        <div style="flex: 1; min-width: 200px;">
+          <label style="font-size: 12px; margin-bottom: 4px; font-weight: 600;">Créée à la date précise :</label>
+          <input type="date" id="filter-date" class="form-control" style="padding: 8px;">
+        </div>
       </div>
 
       <div id="tierlists-container" class="grid">

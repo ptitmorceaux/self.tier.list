@@ -19,15 +19,31 @@
       </div>
 
       <div style="margin-bottom: 60px;">
-        <!-- L'en-tête mis à jour avec la barre de recherche -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 15px;">
           <h2 style="font-size: 24px; font-weight: 800; margin: 0;">🌟 Tier Lists Populaires</h2>
-          
           <div style="flex: 1; max-width: 400px; min-width: 250px;">
-            <input type="text" id="search-input" class="form-control" placeholder="🔍 Rechercher une tier list..." style="width: 100%;">
+            <input type="text" id="search-input" class="form-control" placeholder="🔍 Rechercher par titre ou description..." style="width: 100%;">
           </div>
-
           <div id="refresh-container"></div>
+        </div>
+
+        <!-- Barre de filtres et tris -->
+        <div id="filters-container" style="display: flex; gap: 15px; margin-bottom: 32px; flex-wrap: wrap; background: white; padding: 15px; border-radius: var(--radius); border: 1px solid var(--border);">
+          <div style="flex: 1; min-width: 150px;">
+            <label style="font-size: 12px; margin-bottom: 4px; font-weight: 600;">Trier par :</label>
+            <select id="sort-date" class="form-control" style="padding: 8px;">
+              <option value="desc">Plus récentes (Modification)</option>
+              <option value="asc">Plus anciennes (Modification)</option>
+            </select>
+          </div>
+          <div style="flex: 1; min-width: 150px;">
+            <label style="font-size: 12px; margin-bottom: 4px; font-weight: 600;">Date précise (Création) :</label>
+            <input type="date" id="filter-date" class="form-control" style="padding: 8px;">
+          </div>
+          <div style="flex: 1; min-width: 150px;">
+            <label style="font-size: 12px; margin-bottom: 4px; font-weight: 600;">Auteur précis :</label>
+            <input type="text" id="filter-author" class="form-control" placeholder="Ex: utilisateur #1" style="padding: 8px;">
+          </div>
         </div>
         
         <div id="tierlists-container" class="grid">

@@ -1,5 +1,5 @@
 // profile.js
-let userTierlists = []; // Stockage global pour la recherche
+let userTierlists = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   if (!Auth.isAuthenticated()) {
@@ -13,27 +13,48 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('new-tierlist-btn').addEventListener('click', createNewTierlist);
   document.getElementById('empty-new-btn').addEventListener('click', createNewTierlist);
   
-  // NOUVEAU : Écouteur pour la barre de recherche
-  document.getElementById('search-input')?.addEventListener('input', handleSearch);
+  // Écouteurs pour la recherche ET les filtres
+  document.getElementById('search-input')?.addEventListener('input', applyFilters);
+  document.getElementById('sort-date')?.addEventListener('change', applyFilters);
+  document.getElementById('filter-date')?.addEventListener('change', applyFilters);
 
   await loadUserTierlists();
 });
 
-// NOUVEAU : Fonction de normalisation
 function normalizeString(str) {
   if (!str) return '';
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
-// NOUVEAU : Filtrage instantané
-function handleSearch(e) {
-  const searchTerm = normalizeString(e.target.value);
-  const filtered = userTierlists.filter(t => {
+function applyFilters() {
+  const searchTerm = normalizeString(document.getElementById('search-input')?.value || '');
+  const filterDate = document.getElementById('filter-date')?.value || ''; 
+  const sortOrder = document.getElementById('sort-date')?.value || 'desc';
+
+  let filtered = userTierlists.filter(t => {
     const name = normalizeString(t.name);
     const desc = normalizeString(t.description);
-    return name.includes(searchTerm) || desc.includes(searchTerm);
+    
+    const matchSearch = name.includes(searchTerm) || desc.includes(searchTerm);
+    
+    let matchDate = true;
+    if (filterDate !== '') {
+      const tDate = t.created_at.substring(0, 10);
+      matchDate = tDate === filterDate;
+    }
+
+    return matchSearch && matchDate;
   });
-  renderTierlists(filtered, searchTerm !== '');
+
+  // Tri par date de mise à jour (ou création si absent)
+  filtered.sort((a, b) => {
+    const dateA = new Date(a.updated_at || a.created_at).getTime();
+    const dateB = new Date(b.updated_at || b.created_at).getTime();
+    return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+  });
+
+  const isSearchActive = searchTerm !== '' || filterDate !== '';
+  renderTierlists(filtered, isSearchActive);
 }
 
 async function loadUserTierlists() {
@@ -45,7 +66,7 @@ async function loadUserTierlists() {
     const allTierlists = response.data || [];
     userTierlists = allTierlists.filter(t => t.user_id === Auth.getUser().id);
     
-    renderTierlists(userTierlists, false);
+    applyFilters(); // Lance le rendu
 
   } catch (error) {
     Loading.hide();
@@ -54,7 +75,6 @@ async function loadUserTierlists() {
   }
 }
 
-// Fonction séparée pour le rendu HTML
 function renderTierlists(listsToRender, isSearchActive) {
   const container = document.getElementById('tierlists-container');
   const emptyState = document.getElementById('empty-state');
@@ -64,7 +84,7 @@ function renderTierlists(listsToRender, isSearchActive) {
     container.innerHTML = '';
     
     if (isSearchActive) {
-      emptyState.querySelector('p:nth-of-type(1)').textContent = "Aucun résultat trouvé pour cette recherche.";
+      emptyState.querySelector('p:nth-of-type(1)').textContent = "Aucun résultat trouvé pour ces filtres.";
       emptyState.querySelector('p:nth-of-type(2)').style.display = "none";
       document.getElementById('empty-new-btn').style.display = "none";
     } else {
@@ -78,7 +98,6 @@ function renderTierlists(listsToRender, isSearchActive) {
   emptyState.style.display = 'none';
   container.innerHTML = listsToRender.map(tierlist => createTierlistCard(tierlist)).join('');
 
-  // Ajout des events listeners sur les boutons
   listsToRender.forEach(tierlist => {
     const card = document.querySelector(`[data-tierlist-id="${tierlist.id}"]`);
     if (card) {
@@ -96,7 +115,8 @@ function renderTierlists(listsToRender, isSearchActive) {
 }
 
 function createTierlistCard(tierlist) {
-  const date = new Date(tierlist.created_at).toLocaleDateString('fr-FR');
+  const dateCrea = new Date(tierlist.created_at).toLocaleDateString('fr-FR');
+  const dateModif = tierlist.updated_at ? new Date(tierlist.updated_at).toLocaleDateString('fr-FR') : dateCrea;
   const visibility = tierlist.is_private ? 'Privée' : 'Publique';
   
   return `
@@ -104,8 +124,9 @@ function createTierlistCard(tierlist) {
       <div class="card-header">
         <div>
           <h3 class="card-title">${tierlist.name}</h3>
-          <p style="color: var(--text-light); font-size: 13px; margin-top: 5px;">
-            ${date} • <span class="badge badge-${tierlist.is_private ? 'danger' : 'success'}">${visibility}</span>
+          <p style="color: var(--text-light); font-size: 12px; margin-top: 5px; line-height: 1.4;">
+            <span class="badge badge-${tierlist.is_private ? 'danger' : 'success'}">${visibility}</span><br>
+            📅 Créée le ${dateCrea} • ✏️ Modifiée le ${dateModif}
           </p>
         </div>
       </div>
