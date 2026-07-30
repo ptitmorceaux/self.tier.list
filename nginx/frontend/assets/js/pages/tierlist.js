@@ -422,12 +422,33 @@ class TierlistApp {
     `;
     
     itemDiv.addEventListener('dragstart', (e) => this.handleDragStart(e));
+    
+    // NOUVELLE LOGIQUE : On cible cet élément DOM précis
     itemDiv.querySelector('.remove-btn').addEventListener('click', (e) => {
       e.stopPropagation();
-      this.removeImageAndSync(item.image_hash);
+      this.removeSpecificImage(itemDiv); 
     });
     
     return itemDiv;
+  }
+
+  async removeSpecificImage(elementNode) {
+    // 1. On détruit uniquement cette case HTML
+    elementNode.remove();
+    
+    // 2. On reconstruit les données JSON en lisant l'écran (les doublons intacts resteront)
+    this.rebuildTiersFromDOM();
+    
+    // 3. On sauvegarde
+    try {
+      Loading.show('Suppression...');
+      await this.saveTierlist(true);
+      Loading.hide();
+      Toast.info('Image retirée');
+    } catch (error) {
+      Loading.hide();
+      Toast.error(`Erreur : ${error.message}`);
+    }
   }
 
   handleDragStart(e) {

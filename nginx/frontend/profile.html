@@ -11,11 +11,17 @@
 
   <div class="page">
     <div class="container">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; margin-top: 30px;">
+      <!-- L'en-tête mis à jour avec la barre de recherche -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; margin-top: 30px; flex-wrap: wrap; gap: 15px;">
         <div>
           <h1 style="font-size: 32px; font-weight: 800; margin-bottom: 8px;">📚 Mes Tier Lists</h1>
           <p style="color: var(--text-light);">Gérez et partagez vos créations</p>
         </div>
+        
+        <div style="flex: 1; max-width: 400px; min-width: 250px;">
+          <input type="text" id="search-input" class="form-control" placeholder="🔍 Rechercher dans mes tier lists..." style="width: 100%;">
+        </div>
+
         <button id="new-tierlist-btn" class="btn btn-primary">+ Nouvelle Tier List</button>
       </div>
 

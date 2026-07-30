@@ -19,8 +19,14 @@
       </div>
 
       <div style="margin-bottom: 60px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+        <!-- L'en-tête mis à jour avec la barre de recherche -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 15px;">
           <h2 style="font-size: 24px; font-weight: 800; margin: 0;">🌟 Tier Lists Populaires</h2>
+          
+          <div style="flex: 1; max-width: 400px; min-width: 250px;">
+            <input type="text" id="search-input" class="form-control" placeholder="🔍 Rechercher une tier list..." style="width: 100%;">
+          </div>
+
           <div id="refresh-container"></div>
         </div>
         
